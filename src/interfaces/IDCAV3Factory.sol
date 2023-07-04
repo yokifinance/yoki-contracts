@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 pragma abicoder v2;
 
-import "../interfaces/IDCA.sol";
+import "interfaces/IDCA.sol";
 
 interface IDCAV3Factory {
     function createDCA(
