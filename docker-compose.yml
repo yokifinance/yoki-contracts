@@ -14,21 +14,21 @@ services:
       - '8545:8545/udp'
     env_file:
       - .env
-    # networks:
-    #   - testnet_network
-    #   - default
+    networks:
+      - testnet_network
   testnet_deploy:
     image: ghcr.io/foundry-rs/foundry:nightly-4b0d5d8dc6f1ceb06944524fc0ba59bddc55f60a
+    build: .
     container_name: yoki-testnet-deploy
     env_file:
       - .env
     depends_on:
       - testnet
     volumes:
-      - ./deploy.sh:/deploy.sh
+      - ./:/app
     networks:
       - testnet_network
       - default
-    command: "/deploy.sh"
+    command: "/app/deploy.sh"
 networks:
   testnet_network:
