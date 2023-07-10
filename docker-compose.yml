@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  testnet:
+    build:
+      context: .
+      dockerfile: dockerfile.testnet
+      args:
+        - mnemonic=$mnemonic
+        - infura_url=$infura_url
+    container_name: yoki-testnet
+    ports:
+      - '8545:8545/tcp'
+      - '8545:8545/udp'
+    env_file:
+      - .env
+    networks:
+      - testnet_network
+  testnet_deploy:
+    image: ghcr.io/foundry-rs/foundry:nightly-4b0d5d8dc6f1ceb06944524fc0ba59bddc55f60a
+    build: .
+    container_name: yoki-testnet-deploy
+    env_file:
+      - .env
+    depends_on:
+      - testnet
+    volumes:
+      - ./:/app
+    networks:
+      - testnet_network
+      - default
+    command: "/app/deploy.sh"
+networks:
+  testnet_network:
