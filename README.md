@@ -1,16 +1,35 @@
-# Prerequisites
+# Testnet and local usage
+
+1. Setup your wallet and infura rpc inside `.env` file. Make sure you are using correct network since it will be cloned.
+
+   [https://app.infura.io/dashboard](https://app.infura.io/dashboard)
+
+2. Start docker
+   `docker-compose up`
+
+_optional_: In order to refetch latest chain state or fix any issues you can simply rebuild the container `docker-compose up --build`
+
+It will start local testnet RPC on `http://localhost:8545` and deploy contracts to it. Provided .env mnemonic and address will be the owner of contracts as well as given 1000ETH for playtesting. _Don't forget to add and switch to local network in your metamask_.
+
+Testnet provides fast minting (transactions are executed immediately instead of 10-15s). It is also a complete fork of existing network which means that you can test with real assets without affecting real chain state.
+
+# Developing contracts
+
+## Prerequisites
 
 Forge and other foundry tools are required.
 Foundry prerequisites can be installed using guide from here: https://book.getfoundry.sh/getting-started/installation
 
-# Local testing
+## Local testing
 
 To run tests simply start
 cmd: `forge test -vv`
 to run specific test use test name from any test file:
 ex: `forge test -vv --match-test test_retrieveFunds`
 
-# Local network for tests
+## Local network for tests
+
+You can start local testnet via docker or cmd. Instruction below is how to setup working environment manually:
 
 1. We need testnet RPC with a copy of mainnet.
    We will be using Infra for that cause: (Infra website)[https://app.infura.io/]
