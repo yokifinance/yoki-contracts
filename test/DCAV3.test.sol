@@ -11,7 +11,7 @@ import "../src/dependencies/AssetsWhitelist.sol";
 // simulate 1 to 1 ratio at all times
 contract FakeSwapRouter is ISwapRouter {
     event SwapExecuted(address assetIn, address assetOut, address user, uint256 amountSpent, uint256 amountAcquired);
-
+    event MultiHopSwapExecuted(bytes path, address user, uint256 amountSpent, uint256 amountAcquired);
     constructor() {}
 
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
@@ -20,6 +20,7 @@ contract FakeSwapRouter is ISwapRouter {
     }
 
     function exactInput(ExactInputParams calldata params) external payable returns (uint256 amountOut) {
+        emit MultiHopSwapExecuted(params.path, params.recipient, params.amountIn, params.amountIn);
         return params.amountIn;
     }
 
@@ -47,6 +48,7 @@ contract DcaV3Test is Test {
         uint256 positionIndex, address tokenSpent, address tokenAcquired, uint256 amountSpent, uint256 amountAcquired
     );
     event SwapExecuted(address assetIn, address assetOut, address user, uint256 amountSpent, uint256 amountAcquired);
+    event MultiHopSwapExecuted(bytes path, address user, uint256 amountSpent, uint256 amountAcquired);
 
     function setUp() public {
         assetsHelper = new AssetsHelper(2);
@@ -108,12 +110,20 @@ contract DcaV3Test is Test {
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         uint24 fee = 0;
+        uint256 amountIn = 1;
         bytes memory swapPath = abi.encodePacked(address(assetIn), fee, address(assetOut));
 
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
         assetsHelper.dealTokens(assetIn, user, 1);
+
         vm.prank(user);
-        assetIn.approve(address(DCA), 1);
+        assetIn.approve(address(DCA), amountIn);
+        
+        vm.expectEmit(address(fakeRouter));
+        emit MultiHopSwapExecuted(swapPath, address(user), amountIn, amountIn);
+
+        vm.expectEmit(address(DCA));
+        emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);
 
         vm.prank(worker);
         DCA.executeMultihopPurchase(
@@ -122,7 +132,7 @@ contract DcaV3Test is Test {
                 path: swapPath,
                 recipient: user,
                 deadline: 0, // not used in test
-                amountIn: 1,
+                amountIn: amountIn,
                 amountOutMinimum: 1 // not used in test
             })
         );
