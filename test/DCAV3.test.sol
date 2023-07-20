@@ -107,6 +107,7 @@ contract DcaV3Test is Test {
     }
 
     function test_multiplePurchase() public {
+        uint256 amountIn = 1;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         uint24 fee = 0;
@@ -121,6 +122,12 @@ contract DcaV3Test is Test {
         
         vm.expectEmit(address(fakeRouter));
         emit MultiHopSwapExecuted(swapPath, address(user), amountIn, amountIn);
+
+        vm.expectEmit(address(DCA));
+        emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);
+
+        // vm.expectEmit(address(fakeRouter));
+        // emit SwapExecuted(address(assetIn), address(assetOut), address(user), amountIn, amountIn);
 
         vm.expectEmit(address(DCA));
         emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);

@@ -2,5 +2,8 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+[etherscan]
+polygon = { key = "EII3M4G2MKTHAS6METKBJH149P8EFWV9ZP", url = "https://api.polygonscan.com/api" }
+bsc = { key = "B2JV9AVIVIWWDFDCB27KR1NJ35QEWS552H", url = "https://api.bscscan.com/api" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
