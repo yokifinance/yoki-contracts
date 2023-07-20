@@ -13,6 +13,31 @@ It will start local testnet RPC on `http://localhost:8545` and deploy contracts 
 
 Testnet provides fast minting (transactions are executed immediately instead of 10-15s). It is also a complete fork of existing network which means that you can test with real assets without affecting real chain state.
 
+# Deploy contracts
+
+## Deploy
+
+Rename `.env.example` to `.env` and setup env variables
+
+Run
+
+```
+export $(grep -v '^#' .env | xargs)
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/All_Deploy.sol --broadcast
+```
+
+You can check deployed addresses in console or in /broadcast folder
+
+## Verify
+
+Setup apikeys and urls in `foundry.toml` and constructor args in txt file (see example in `factory-constructor-args.txt`)
+
+Verify target contract using following command:
+
+```
+forge verify-contract --chain polygon 0x7a5B8E6c19ceA36Abc3b8f2C13962344207feA6b --watch --constructor-args-path factory-constructor-args.txt src/factories/DCAV3Factory.sol:DCAV3Factory
+```
+
 # Developing contracts
 
 ## Prerequisites

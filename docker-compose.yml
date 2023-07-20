@@ -7,7 +7,7 @@ services:
       dockerfile: dockerfile.testnet
       args:
         - mnemonic=$mnemonic
-        - infura_url=$infura_url
+        - RPC=$RPC
     container_name: yoki-testnet
     ports:
       - '8545:8545/tcp'
@@ -17,7 +17,7 @@ services:
     networks:
       - testnet_network
   testnet_deploy:
-    image: ghcr.io/foundry-rs/foundry:nightly-4b0d5d8dc6f1ceb06944524fc0ba59bddc55f60a
+    image: ghcr.io/foundry-rs/foundry
     build: .
     container_name: yoki-testnet-deploy
     env_file:

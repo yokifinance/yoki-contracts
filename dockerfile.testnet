@@ -5,11 +5,11 @@ WORKDIR /app
 COPY . .
 
 ARG mnemonic
-ARG infura_url
+ARG RPC
 ENV mnemonic=$mnemonic
-ENV infura_url=$infura_url
+ENV RPC=$RPC
 
 RUN forge build
 EXPOSE 8545/udp
 EXPOSE 8545/tcp
-ENTRYPOINT anvil -m "$mnemonic" --fork-url $infura_url --no-cors --host 0.0.0.0
+ENTRYPOINT anvil -m "$mnemonic" --fork-url $RPC --no-cors --host 0.0.0.0
