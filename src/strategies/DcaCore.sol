@@ -9,17 +9,21 @@ import "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "@openzeppelin-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
 import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
+import "@openzeppelin-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 
-abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+
+abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, ReentrancyGuardUpgradeable, AccessControlUpgradeable {
     Position[] internal _allPositions;
     IAssetsWhitelist public assetsWhitelist;
     address public swapRouter;
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
     uint256 public constant EXECUTION_COOLDOWN = 3300;
 
     uint256 public constant BASIS_POINTS = 1000;
-    uint256 public constant MAX_FEE_MULTIPLIER = 100;
+    uint256 public constant MAX_FEE_MULTIPLIER = 50; // Represents 5%
+    uint256 public commissionFeePercent;
 
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
@@ -35,8 +39,10 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         __ReentrancyGuard_init_unchained();
         assetsWhitelist = assetsWhitelist_;
         swapRouter = swapRouter_;
+        commissionFeePercent = 0;
         transferOwnership(newOwner_);
         _openPosition(initialPosition_);
+        _setupRole(ADMIN_ROLE, TREASURY);
     }
 
     function allPositionsLength() external view returns (uint256) {
@@ -75,6 +81,26 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         pos.singleSpendAmount = newSingleSpendAmount;
 
         emit SingleSpendAmountChanged(positionIndex, newSingleSpendAmount);
+    }
+
+    function setCommissionFee(uint256 newCommissionFeePercent) external {
+        require(hasRole(ADMIN_ROLE, _msgSender()), "Must have admin role to set commission fee");
+        require(newCommissionFeePercent <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
+
+        commissionFeePercent = newCommissionFeePercent;
+
+        emit CommissionFeeChanged(newCommissionFeePercent);
+    }
+
+    function _handleFees(
+        address _token,
+        uint256 _amount
+    ) internal {
+        require(commissionFeePercent <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
+
+        uint256 fee = _amount * commissionFeePercent / BASIS_POINTS;
+
+        TransferHelper.safeTransfer(_token, TREASURY, fee);
     }
 
     function openPosition(Position calldata _newPosition) external onlyOwner {
