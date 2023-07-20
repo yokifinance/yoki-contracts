@@ -36,6 +36,8 @@ interface IDCA {
 
     event FundsRetrieved(address tokenRetrieved, uint256 amountRetrieved, address recipient);
 
+    event CommissionFeeChanged(uint256 newCommissionFee);
+
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
         address swapRouter_,
