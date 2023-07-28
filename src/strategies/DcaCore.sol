@@ -98,6 +98,11 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
     ) internal {
         require(commissionFeeMultiplier <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
 
+        if(commissionFeeMultiplier == 0) {
+            // If feeMultiplier is 0, exit function without making a transfer
+            return;
+        }
+
         uint256 fee = _amount * commissionFeeMultiplier / BASIS_POINTS;
 
         TransferHelper.safeTransfer(_token, TREASURY, fee);
