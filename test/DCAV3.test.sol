@@ -111,7 +111,6 @@ contract DcaV3Test is Test {
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         uint24 fee = 0;
-        uint256 amountIn = 1;
         bytes memory swapPath = abi.encodePacked(address(assetIn), fee, address(assetOut));
 
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());

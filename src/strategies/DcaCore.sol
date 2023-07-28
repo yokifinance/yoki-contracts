@@ -23,7 +23,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
 
     uint256 public constant BASIS_POINTS = 1000;
     uint256 public constant MAX_FEE_MULTIPLIER = 50; // Represents 5%
-    uint256 public commissionFeePercent;
+    uint256 public commissionFeeMultiplier;
 
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
@@ -39,7 +39,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         __ReentrancyGuard_init_unchained();
         assetsWhitelist = assetsWhitelist_;
         swapRouter = swapRouter_;
-        commissionFeePercent = 0;
+        commissionFeeMultiplier = 0;
         transferOwnership(newOwner_);
         _openPosition(initialPosition_);
         _setupRole(ADMIN_ROLE, TREASURY);
@@ -83,22 +83,22 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         emit SingleSpendAmountChanged(positionIndex, newSingleSpendAmount);
     }
 
-    function setCommissionFee(uint256 newCommissionFeePercent) external {
+    function setCommissionFeeMultiplier(uint256 newCommissionFeeMultiplier) external {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Must have admin role to set commission fee");
-        require(newCommissionFeePercent <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
+        require(newCommissionFeeMultiplier <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
 
-        commissionFeePercent = newCommissionFeePercent;
+        commissionFeeMultiplier = newCommissionFeeMultiplier;
 
-        emit CommissionFeeChanged(newCommissionFeePercent);
+        emit CommissionFeeChanged(commissionFeeMultiplier, msg.sender);
     }
 
     function _handleFees(
         address _token,
         uint256 _amount
     ) internal {
-        require(commissionFeePercent <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
+        require(commissionFeeMultiplier <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
 
-        uint256 fee = _amount * commissionFeePercent / BASIS_POINTS;
+        uint256 fee = _amount * commissionFeeMultiplier / BASIS_POINTS;
 
         TransferHelper.safeTransfer(_token, TREASURY, fee);
     }
