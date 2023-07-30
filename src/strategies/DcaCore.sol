@@ -23,7 +23,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
 
     uint256 public constant BASIS_POINTS = 1000;
     uint256 public constant MAX_FEE_MULTIPLIER = 50; // Represents 5%
-    uint256 public commissionFeeMultiplier;
+    uint256 public commissionFeeMultiplier = 0;
 
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
@@ -39,7 +39,6 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         __ReentrancyGuard_init_unchained();
         assetsWhitelist = assetsWhitelist_;
         swapRouter = swapRouter_;
-        commissionFeeMultiplier = 0;
         transferOwnership(newOwner_);
         _openPosition(initialPosition_);
         _setupRole(ADMIN_ROLE, TREASURY);
@@ -83,13 +82,14 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         emit SingleSpendAmountChanged(positionIndex, newSingleSpendAmount);
     }
 
-    function setCommissionFeeMultiplier(uint256 newCommissionFeeMultiplier) external {
+    function setCommissionFeeMultiplier(uint256 newCommissionFeeMultiplier) external returns (uint256)  {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Must have admin role to set commission fee");
         require(newCommissionFeeMultiplier <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
 
         commissionFeeMultiplier = newCommissionFeeMultiplier;
 
         emit CommissionFeeChanged(commissionFeeMultiplier, msg.sender);
+        return commissionFeeMultiplier;
     }
 
     function _handleFees(

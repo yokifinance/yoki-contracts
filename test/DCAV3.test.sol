@@ -125,12 +125,6 @@ contract DcaV3Test is Test {
         vm.expectEmit(address(DCA));
         emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);
 
-        // vm.expectEmit(address(fakeRouter));
-        // emit SwapExecuted(address(assetIn), address(assetOut), address(user), amountIn, amountIn);
-
-        vm.expectEmit(address(DCA));
-        emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);
-
         vm.prank(worker);
         DCA.executeMultihopPurchase(
             0,
@@ -203,5 +197,18 @@ contract DcaV3Test is Test {
 
         assertEq(targetAsset.balanceOf(recipient), tokensAmount);
         assertEq(targetAsset.balanceOf(user), 0);
+    }
+
+    function test_initialtCommissionFeeMultiplier() public {
+        vm.prank(user);
+        uint256 initialtCommissionFeeMultiplier = 0;
+        assertEq(DCA.commissionFeeMultiplier(), initialtCommissionFeeMultiplier);
+    }
+
+    function test_RevertIfsetCommissionFeeMultiplierFromNotAdmin() public {
+        address notAdmin = makeAddr("notAdmin");
+        vm.prank(notAdmin);
+        vm.expectRevert("Must have admin role to set commission fee");
+        DCA.setCommissionFeeMultiplier(1);
     }
 }
