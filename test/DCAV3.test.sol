@@ -205,10 +205,17 @@ contract DcaV3Test is Test {
         assertEq(DCA.commissionFeeMultiplier(), initialtCommissionFeeMultiplier);
     }
 
-    function test_RevertIfsetCommissionFeeMultiplierFromNotAdmin() public {
+    function test_revertIfsetCommissionFeeMultiplierFromNotAdmin() public {
         address notAdmin = makeAddr("notAdmin");
         vm.prank(notAdmin);
         vm.expectRevert("Must have admin role to set commission fee");
         DCA.setCommissionFeeMultiplier(1);
+    }
+
+    function test_setCommissionFeeMultiplierFromAdmin() public {
+        address admin = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+        vm.prank(admin);
+        DCA.setCommissionFeeMultiplier(5);
+        assertEq(DCA.commissionFeeMultiplier(), 5);
     }
 }
