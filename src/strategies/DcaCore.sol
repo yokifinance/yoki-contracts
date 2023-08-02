@@ -23,7 +23,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
 
     uint256 public constant BASIS_POINTS = 1000;
     uint256 public constant MAX_FEE_MULTIPLIER = 50; // Represents 5%
-    uint256 public commissionFeeMultiplier = 0;
+    uint256 public commissionFee = 0;
 
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
@@ -82,28 +82,28 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         emit SingleSpendAmountChanged(positionIndex, newSingleSpendAmount);
     }
 
-    function setCommissionFeeMultiplier(uint256 newCommissionFeeMultiplier) external returns (uint256) {
+    function setCommissionFee(uint256 newCommissionFee) external returns (uint256) {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Must have admin role to set commission fee");
-        require(newCommissionFeeMultiplier <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
+        require(newCommissionFee <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
 
-        commissionFeeMultiplier = newCommissionFeeMultiplier;
+        commissionFee = newCommissionFee;
 
-        emit CommissionFeeChanged(commissionFeeMultiplier, msg.sender);
-        return commissionFeeMultiplier;
+        emit CommissionFeeChanged(commissionFee, msg.sender);
+        return commissionFee;
     }
 
     function _handleFees(
         address _token,
         uint256 _amount
     ) internal returns (uint256) {
-        require(commissionFeeMultiplier <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
+        require(commissionFee <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
 
-        if(commissionFeeMultiplier == 0) {
+        if(commissionFee == 0) {
             // If feeMultiplier is 0, exit function without making a transfer
             return _amount;
         }
 
-        uint256 fee = _amount * commissionFeeMultiplier / BASIS_POINTS;
+        uint256 fee = _amount * commissionFee / BASIS_POINTS;
 
         TransferHelper.safeTransfer(
             _token,

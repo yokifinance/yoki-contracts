@@ -215,21 +215,21 @@ contract DcaV3Test is Test {
     function test_initialtCommissionFeeMultiplier() public {
         vm.prank(user);
         uint256 initialtCommissionFeeMultiplier = 0;
-        assertEq(DCA.commissionFeeMultiplier(), initialtCommissionFeeMultiplier);
+        assertEq(DCA.commissionFee(), initialtCommissionFeeMultiplier);
     }
 
     function test_revertIfsetCommissionFeeMultiplierFromNotAdmin() public {
         address notAdmin = makeAddr("notAdmin");
         vm.prank(notAdmin);
         vm.expectRevert("Must have admin role to set commission fee");
-        DCA.setCommissionFeeMultiplier(1);
+        DCA.setCommissionFee(1);
     }
 
     function test_setCommissionFeeMultiplierFromAdmin() public {
         address admin = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
         vm.prank(admin);
-        DCA.setCommissionFeeMultiplier(5);
-        assertEq(DCA.commissionFeeMultiplier(), 5);
+        DCA.setCommissionFee(5);
+        assertEq(DCA.commissionFee(), 5);
     }
 
     function test_handleFees() public {
@@ -251,7 +251,7 @@ contract DcaV3Test is Test {
         assetIn.approve(address(DCA), amountIn);
 
         vm.prank(admin);
-        DCA.setCommissionFeeMultiplier(50); // 5 %
+        DCA.setCommissionFee(50); // 5 %
         
         vm.prank(worker);
         DCA.executeMultihopPurchase(
