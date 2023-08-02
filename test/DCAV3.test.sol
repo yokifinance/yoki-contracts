@@ -72,6 +72,19 @@ contract DcaV3Test is Test {
         });
         fakeRouter = new FakeSwapRouter();
         DCA.initialize(assetsWhiteList, address(fakeRouter), user, initialPosition);
+        
+        // Open second position
+        vm.prank(user);
+        DCA.openPosition(
+            IDCA.Position({
+                beneficiary: user,
+                executor: worker,
+                singleSpendAmount: 100000, // 1 USDT
+                tokenToSpend: assetsAddresses[0],
+                tokenToBuy: assetsAddresses[1],
+                lastPurchaseTimestamp: 1
+            })
+        );
     }
 
     function test_singlePurchase() public {
@@ -140,8 +153,8 @@ contract DcaV3Test is Test {
 
     function test_openPosition() public {
         address[] memory assetsAddresses = assetsHelper.getAssetsAddresses();
-        address tokenToSpend = assetsAddresses[1];
-        address tokenToBuy = assetsAddresses[0];
+        address tokenToSpend = assetsAddresses[0];
+        address tokenToBuy = assetsAddresses[1];
         uint256 singleSpendAmount = 1;
         vm.prank(user);
         DCA.openPosition(
@@ -154,7 +167,7 @@ contract DcaV3Test is Test {
                 lastPurchaseTimestamp: 1
             })
         );
-        IDCA.Position memory newPosition = DCA.getPosition(1);
+        IDCA.Position memory newPosition = DCA.getPosition(0);
         assertEq(newPosition.beneficiary, user);
         assertEq(newPosition.executor, worker);
         assertEq(newPosition.singleSpendAmount, singleSpendAmount);
@@ -218,4 +231,42 @@ contract DcaV3Test is Test {
         DCA.setCommissionFeeMultiplier(5);
         assertEq(DCA.commissionFeeMultiplier(), 5);
     }
+
+    function test_handleFees() public {
+        address vault = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+        address admin = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+
+        uint256 amountIn = 100000;
+        ERC20 assetIn = assetsHelper.assets(0);
+
+        ERC20 assetOut = assetsHelper.assets(1);
+        uint24 fee = 0;
+        uint256 positionIndex = 1; 
+        bytes memory swapPath = abi.encodePacked(address(assetIn), fee, address(assetOut));
+
+        vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
+        assetsHelper.dealTokens(assetIn, user, 100000);
+
+        vm.prank(user);
+        assetIn.approve(address(DCA), amountIn);
+
+        vm.prank(admin);
+        DCA.setCommissionFeeMultiplier(50); // 5 %
+        
+        vm.prank(worker);
+        DCA.executeMultihopPurchase(
+            positionIndex,
+            ISwapRouter.ExactInputParams({
+                path: swapPath,
+                recipient: user,
+                deadline: 0, // not used in test
+                amountIn: amountIn,
+                amountOutMinimum: 1 // not used in test
+            })
+        );
+        assertEq(assetIn.balanceOf(vault), 5000); // 5 % of amountIn = 5000 
+
+    }
 }
+
+    

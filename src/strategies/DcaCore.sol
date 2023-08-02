@@ -82,7 +82,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         emit SingleSpendAmountChanged(positionIndex, newSingleSpendAmount);
     }
 
-    function setCommissionFeeMultiplier(uint256 newCommissionFeeMultiplier) external returns (uint256)  {
+    function setCommissionFeeMultiplier(uint256 newCommissionFeeMultiplier) external returns (uint256) {
         require(hasRole(ADMIN_ROLE, _msgSender()), "Must have admin role to set commission fee");
         require(newCommissionFeeMultiplier <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
 
@@ -95,17 +95,23 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
     function _handleFees(
         address _token,
         uint256 _amount
-    ) internal {
+    ) internal returns (uint256) {
         require(commissionFeeMultiplier <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
 
         if(commissionFeeMultiplier == 0) {
             // If feeMultiplier is 0, exit function without making a transfer
-            return;
+            return _amount;
         }
 
         uint256 fee = _amount * commissionFeeMultiplier / BASIS_POINTS;
 
-        TransferHelper.safeTransfer(_token, TREASURY, fee);
+        TransferHelper.safeTransfer(
+            _token,
+            TREASURY,
+            fee
+        );
+        uint256 newAmount = _amount - fee;
+        return newAmount;
     }
 
     function openPosition(Position calldata _newPosition) external onlyOwner {
