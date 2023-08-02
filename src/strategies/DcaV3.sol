@@ -55,8 +55,6 @@ contract DCAV3 is DCACore {
             "DCA: Not enough funds"
         );
 
-        _handleFees(tokenIn, _params.amountIn);
-
         // Transfer tokens from user to this contract
         TransferHelper.safeTransferFrom(
             tokenIn,
@@ -64,6 +62,9 @@ contract DCAV3 is DCACore {
             address(this),
             _params.amountIn
         );
+
+        uint256 amountAfterHandleFee = _handleFees(tokenIn, _params.amountIn);
+        _params.amountIn = amountAfterHandleFee;
 
         bytes memory tempPath;
 
@@ -122,8 +123,6 @@ contract DCAV3 is DCACore {
             "DCA: Not enough funds"
         );
 
-        _handleFees(tokenIn, _params.amountIn);
-
         // Transfer tokens from user to this contract
         TransferHelper.safeTransferFrom(
             tokenIn,
@@ -131,6 +130,9 @@ contract DCAV3 is DCACore {
             address(this),
             _params.amountIn
         );
+
+        uint256 amountAfterHandleFee = _handleFees(tokenIn, _params.amountIn);
+        _params.amountIn = amountAfterHandleFee;
 
         require(tokenOut == _pos.tokenToBuy, "DCA: Wrong output token");
 
