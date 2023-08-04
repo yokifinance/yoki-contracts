@@ -233,7 +233,7 @@ contract DcaV3Test is Test {
     }
 
     function test_handleFees() public {
-        address vault = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+        address vault = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35; // Should be same as TREASURY
         address admin = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
 
         uint256 amountIn = 100000;
