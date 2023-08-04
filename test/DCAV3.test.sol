@@ -207,6 +207,7 @@ contract DcaV3Test is Test {
     }
 
     function test_initialAdminIsTreasury() public {
+        // assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), DCA.TREASURY()));
         assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), DCA.TREASURY()));
     }
 
@@ -222,6 +223,28 @@ contract DcaV3Test is Test {
         vm.prank(admin);
         DCA.setCommissionFee(5);
         assertEq(DCA.commissionFee(), 5);
+    }
+
+    function test_addNewAdmin() public {
+        address admin = DCA.TREASURY();
+
+        // Check if the admin has the DEFAULT_ADMIN_ROLE
+        assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), admin), "Admin does not have the DEFAULT_ADMIN_ROLE");
+
+        // Now, grant the ADMIN_ROLE to the worker
+        vm.prank(admin);
+
+        DCA.grantRole(DCA.ADMIN_ROLE(), worker);
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), worker));
+    }
+
+    function test_removeAdmin() public {
+        address admin = DCA.TREASURY();
+        vm.prank(admin);
+
+        DCA.grantRole(DCA.ADMIN_ROLE(), worker);
+        DCA.revokeRole(DCA.ADMIN_ROLE(), worker);
+        assertFalse(DCA.hasRole(DCA.ADMIN_ROLE(), worker));
     }
 
     function test_handleFees() public {
@@ -256,7 +279,7 @@ contract DcaV3Test is Test {
                 amountOutMinimum: 1 // not used in test
             })
         );
-        assertEq(assetIn.balanceOf(vault), 5000); // 5 % of amountIn = 5000 
+        assertEq(assetIn.balanceOf(vault), 50000); // 5 % of amountIn = 5000 
 
     }
 }

@@ -17,7 +17,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
     IAssetsWhitelist public assetsWhitelist;
     address public swapRouter;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-
+    
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
     uint256 public constant EXECUTION_COOLDOWN = 3300;
 
@@ -41,7 +41,8 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         swapRouter = swapRouter_;
         transferOwnership(newOwner_);
         _openPosition(initialPosition_);
-        _setupRole(ADMIN_ROLE, TREASURY);
+        _setupRole(DEFAULT_ADMIN_ROLE, TREASURY); // Super admin - can grant and revoke roles
+        _setupRole(ADMIN_ROLE, TREASURY); // Role for changing the commission
     }
 
     function allPositionsLength() external view returns (uint256) {
