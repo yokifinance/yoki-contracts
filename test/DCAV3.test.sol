@@ -212,10 +212,14 @@ contract DcaV3Test is Test {
         assertEq(targetAsset.balanceOf(user), 0);
     }
 
-    function test_initialtCommissionFeeMultiplier() public {
+    function test_initialCommissionFeeMultiplier() public {
         vm.prank(user);
         uint256 initialtCommissionFeeMultiplier = 0;
         assertEq(DCA.commissionFee(), initialtCommissionFeeMultiplier);
+    }
+
+    function test_initialAdminIsTreasury() public {
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), DCA.TREASURY()));
     }
 
     function test_revertIfsetCommissionFeeMultiplierFromNotAdmin() public {
@@ -226,15 +230,15 @@ contract DcaV3Test is Test {
     }
 
     function test_setCommissionFeeMultiplierFromAdmin() public {
-        address admin = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+        address admin = DCA.TREASURY();
         vm.prank(admin);
         DCA.setCommissionFee(5);
         assertEq(DCA.commissionFee(), 5);
     }
 
     function test_handleFees() public {
-        address vault = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35; // Should be same as TREASURY
-        address admin = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+        address vault = DCA.TREASURY();
+        address admin = DCA.TREASURY();
 
         uint256 amountIn = 100000;
         ERC20 assetIn = assetsHelper.assets(0);
