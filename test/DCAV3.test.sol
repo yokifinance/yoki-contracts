@@ -65,37 +65,25 @@ contract DcaV3Test is Test {
         initialPosition = IDCA.Position({
             beneficiary: user,
             executor: worker,
-            singleSpendAmount: 1,
+            singleSpendAmount: 1000000,
             tokenToSpend: assetsAddresses[0],
             tokenToBuy: assetsAddresses[1],
             lastPurchaseTimestamp: 1
         });
         fakeRouter = new FakeSwapRouter();
         DCA.initialize(assetsWhiteList, address(fakeRouter), user, initialPosition);
-        
-        // Open second position
-        vm.prank(user);
-        DCA.openPosition(
-            IDCA.Position({
-                beneficiary: user,
-                executor: worker,
-                singleSpendAmount: 100000, // 1 USDT
-                tokenToSpend: assetsAddresses[0],
-                tokenToBuy: assetsAddresses[1],
-                lastPurchaseTimestamp: 1
-            })
-        );
+
     }
 
     function test_singlePurchase() public {
-        uint256 amountIn = 1;
+        uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
-        assetsHelper.dealTokens(assetIn, user, 1);
+        assetsHelper.dealTokens(assetIn, user, amountIn);
 
         vm.prank(user);
-        assetIn.approve(address(DCA), 1);
+        assetIn.approve(address(DCA), amountIn);
 
         vm.expectEmit(address(fakeRouter));
         emit SwapExecuted(address(assetIn), address(assetOut), address(user), amountIn, amountIn);
@@ -120,14 +108,14 @@ contract DcaV3Test is Test {
     }
 
     function test_multiplePurchase() public {
-        uint256 amountIn = 1;
+        uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         uint24 fee = 0;
         bytes memory swapPath = abi.encodePacked(address(assetIn), fee, address(assetOut));
 
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
-        assetsHelper.dealTokens(assetIn, user, 1);
+        assetsHelper.dealTokens(assetIn, user, amountIn);
 
         vm.prank(user);
         assetIn.approve(address(DCA), amountIn);
@@ -167,7 +155,7 @@ contract DcaV3Test is Test {
                 lastPurchaseTimestamp: 1
             })
         );
-        IDCA.Position memory newPosition = DCA.getPosition(0);
+        IDCA.Position memory newPosition = DCA.getPosition(1);
         assertEq(newPosition.beneficiary, user);
         assertEq(newPosition.executor, worker);
         assertEq(newPosition.singleSpendAmount, singleSpendAmount);
@@ -240,16 +228,16 @@ contract DcaV3Test is Test {
         address vault = DCA.TREASURY();
         address admin = DCA.TREASURY();
 
-        uint256 amountIn = 100000;
+        uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
 
         ERC20 assetOut = assetsHelper.assets(1);
         uint24 fee = 0;
-        uint256 positionIndex = 1; 
+        uint256 positionIndex = 0; 
         bytes memory swapPath = abi.encodePacked(address(assetIn), fee, address(assetOut));
 
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
-        assetsHelper.dealTokens(assetIn, user, 100000);
+        assetsHelper.dealTokens(assetIn, user, 1000000);
 
         vm.prank(user);
         assetIn.approve(address(DCA), amountIn);
