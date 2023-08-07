@@ -296,7 +296,7 @@ contract DcaV3Test is Test {
     }
 
     function test_initialAdminIsTreasury() public {
-        // assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), DCA.TREASURY()));
+        assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), DCA.TREASURY()));
         assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), DCA.TREASURY()));
     }
 
