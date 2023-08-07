@@ -9,6 +9,8 @@ contract AssetsWhitelistTest is Test {
     address[] public assetsToSpend;
     address[] public assetsToBuy;
     address public notListedAsset;
+    AssetsWhitelist assetsWhitelist;
+    address admin;
 
     function setUp() public {
         assetsHelper = new AssetsHelper(2);
@@ -16,21 +18,23 @@ contract AssetsWhitelistTest is Test {
         assetsToSpend = assetsAddresses;
         assetsToBuy = assetsAddresses;
         notListedAsset = address(assetsHelper.generateAsset("UnlistedAsset", "UA"));
+        assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
+        admin = assetsWhitelist.TREASURY();
     }
 
     function test_checkWhitelisted() public {
-        AssetsWhitelist assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
         assertTrue(assetsWhitelist.checkIfWhitelisted(assetsToSpend[0], assetsToBuy[0]));
         assertFalse(assetsWhitelist.checkIfWhitelisted(assetsToSpend[0], notListedAsset));
         assertFalse(assetsWhitelist.checkIfWhitelisted(notListedAsset, assetsToBuy[0]));
     }
 
     function test_addWhitelistSpend() public {
-        AssetsWhitelist assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
         address newAssetToSpend = address(assetsHelper.generateAsset("New asset: sell", "NAS"));
         address assetToBuy = assetsToBuy[0];
 
         assertFalse(assetsWhitelist.checkIfWhitelisted(newAssetToSpend, newAssetToSpend));
+
+        vm.prank(admin);
         assetsWhitelist.whitelistAssetToSpend(newAssetToSpend);
         assertTrue(assetsWhitelist.checkIfWhitelisted(newAssetToSpend, assetToBuy));
 
@@ -39,12 +43,12 @@ contract AssetsWhitelistTest is Test {
     }
 
     function test_addWhitelistBuy() public {
-        AssetsWhitelist assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
         address assetToSpend = assetsToSpend[0];
         address newAssetToBuy = address(assetsHelper.generateAsset("New asset: buy", "NAB"));
 
         assertFalse(assetsWhitelist.checkIfWhitelisted(newAssetToBuy, newAssetToBuy));
-
+    
+        vm.prank(admin);
         assetsWhitelist.whitelistAssetToBuy(newAssetToBuy);
         assertTrue(assetsWhitelist.checkIfWhitelisted(assetToSpend, newAssetToBuy));
         // make sure that if we allow buying - spending is not whitelisted too
@@ -52,22 +56,46 @@ contract AssetsWhitelistTest is Test {
     }
 
     function test_removeWhitelistSpend() public {
-        AssetsWhitelist assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
-
         address removedSpendAsset = assetsToSpend[0];
         assertTrue(assetsWhitelist.checkIfWhitelisted(removedSpendAsset, assetsToBuy[0]));
-
+    
+        vm.prank(admin);
         assetsWhitelist.removeAssetToSpend(removedSpendAsset);
         assertFalse(assetsWhitelist.checkIfWhitelisted(removedSpendAsset, assetsToBuy[0]));
     }
 
     function test_removeWhitelistBuy() public {
-        AssetsWhitelist assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
-
         address removedBuyAsset = assetsToSpend[0];
         assertTrue(assetsWhitelist.checkIfWhitelisted(assetsToSpend[0], removedBuyAsset));
-
+    
+        vm.prank(admin);
         assetsWhitelist.removeAssetToBuy(removedBuyAsset);
         assertFalse(assetsWhitelist.checkIfWhitelisted(assetsToSpend[0], removedBuyAsset));
+    }
+
+    function test_unauthorizedAccessAttempt() public {
+        address notAdmin = makeAccount("notAdmin").addr;
+        address newAssetToSpend = address(assetsHelper.generateAsset("New asset: sell", "NAS"));
+        address newAssetToBuy = address(assetsHelper.generateAsset("New asset: buy", "NAB"));
+        address removedSpendAsset = assetsToSpend[0];
+        address removedBuyAsset = assetsToSpend[0];
+
+        vm.prank(notAdmin);
+        vm.expectRevert("Must have admin role to edit the whitelist");
+        assetsWhitelist.whitelistAssetToSpend(newAssetToSpend);
+
+        vm.prank(notAdmin);
+        vm.expectRevert("Must have admin role to edit the whitelist");
+        assetsWhitelist.whitelistAssetToBuy(newAssetToBuy);
+
+        vm.prank(notAdmin);
+        vm.expectRevert("Must have admin role to edit the whitelist");
+        assetsWhitelist.removeAssetToSpend(removedSpendAsset);
+
+        vm.prank(notAdmin);
+        vm.expectRevert("Must have admin role to edit the whitelist");
+        assetsWhitelist.removeAssetToBuy(removedBuyAsset);
+
+
     }
 }
