@@ -21,9 +21,19 @@ Rename `.env.example` to `.env` and setup env variables
 
 Run
 
+Production:
+
 ```
 export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/All_Deploy.sol --broadcast
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
+```
+
+`note: deploy goes for single chain only. IF you need to deploy on multiple chains - dont forget to update "RPC" and "CHAIN_ID" values in env file before rerunning both commands`
+`tip: to save gas - you may want to deploy factory only and keep dcaImp and whitelist from first/old ones. In that case - use deployDCAV3Factory instead`
+Local testnet:
+
+```
+forge script --rpc-url http://localhost:8545 script/All_Deploy.sol --broadcast --legacy
 ```
 
 You can check deployed addresses in console or in /broadcast folder
@@ -123,7 +133,12 @@ example:
 4. Call "deployDCA"
    example input:
    `0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43`
-   `["0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43", "0x2F81b3BAFC24d174D370678EfDe14A69F43974Cc",2,"0xc2132D05D31c914a87C6611C10748AEb04B58e8F","0xb33EaAd8d922B1083446DC23f610c2567fB5180f",0]`
+   `["0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43", "0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43",2,"0xc2132D05D31c914a87C6611C10748AEb04B58e8F","0xb33EaAd8d922B1083446DC23f610c2567fB5180f",0]`
+
+   sungle purchase
+   `0`
+   // tokenIn // tokenOut // fee // benefeciary
+   `["0xb33EaAd8d922B1083446DC23f610c2567fB5180f", "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",0,"0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43",0, 2, 0, 0]`
 
 ## Now we can test locally deployed contract with metamask / FE app / cast / hardhat / etc.
 
