@@ -12,6 +12,7 @@ import "../src/dependencies/AssetsWhitelist.sol";
 contract FakeSwapRouter is ISwapRouter {
     event SwapExecuted(address assetIn, address assetOut, address user, uint256 amountSpent, uint256 amountAcquired);
     event MultiHopSwapExecuted(bytes path, address user, uint256 amountSpent, uint256 amountAcquired);
+
     constructor() {}
 
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
@@ -37,6 +38,8 @@ contract DcaV3Test is Test {
     IDCA.Position public initialPosition;
     address internal user;
     address internal worker;
+    address internal admin;
+    address internal vault;
     FakeSwapRouter internal fakeRouter;
 
     // https://book.getfoundry.sh/cheatcodes/expect-emit
@@ -65,24 +68,27 @@ contract DcaV3Test is Test {
         initialPosition = IDCA.Position({
             beneficiary: user,
             executor: worker,
-            singleSpendAmount: 1,
+            singleSpendAmount: 1000000,
             tokenToSpend: assetsAddresses[0],
             tokenToBuy: assetsAddresses[1],
             lastPurchaseTimestamp: 1
         });
         fakeRouter = new FakeSwapRouter();
         DCA.initialize(assetsWhiteList, address(fakeRouter), user, initialPosition);
+
+        admin = worker;
+        vault = DCA.TREASURY();
     }
 
     function test_singlePurchase() public {
-        uint256 amountIn = 1;
+        uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
-        assetsHelper.dealTokens(assetIn, user, 1);
+        assetsHelper.dealTokens(assetIn, user, amountIn);
 
         vm.prank(user);
-        assetIn.approve(address(DCA), 1);
+        assetIn.approve(address(DCA), amountIn);
 
         vm.expectEmit(address(fakeRouter));
         emit SwapExecuted(address(assetIn), address(assetOut), address(user), amountIn, amountIn);
@@ -107,27 +113,20 @@ contract DcaV3Test is Test {
     }
 
     function test_multiplePurchase() public {
-        uint256 amountIn = 1;
+        uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
         uint24 fee = 0;
-        uint256 amountIn = 1;
         bytes memory swapPath = abi.encodePacked(address(assetIn), fee, address(assetOut));
 
         vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
-        assetsHelper.dealTokens(assetIn, user, 1);
+        assetsHelper.dealTokens(assetIn, user, amountIn);
 
         vm.prank(user);
         assetIn.approve(address(DCA), amountIn);
-        
+
         vm.expectEmit(address(fakeRouter));
         emit MultiHopSwapExecuted(swapPath, address(user), amountIn, amountIn);
-
-        vm.expectEmit(address(DCA));
-        emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);
-
-        // vm.expectEmit(address(fakeRouter));
-        // emit SwapExecuted(address(assetIn), address(assetOut), address(user), amountIn, amountIn);
 
         vm.expectEmit(address(DCA));
         emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountIn, amountIn);
@@ -145,10 +144,95 @@ contract DcaV3Test is Test {
         );
     }
 
+    function test_multiplePurchaseWithFee() public {
+        uint256 amountIn = 1000000;
+        ERC20 assetIn = assetsHelper.assets(0);
+        ERC20 assetOut = assetsHelper.assets(1);
+        uint24 poolFee = 0;
+
+        bytes memory swapPath = abi.encodePacked(address(assetIn), poolFee, address(assetOut));
+
+        vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
+        assetsHelper.dealTokens(assetIn, user, amountIn);
+
+        vm.prank(user);
+        assetIn.approve(address(DCA), amountIn);
+
+        vm.prank(admin);
+        DCA.setCommissionFee(50); // 5 %
+
+        uint256 commissionFee = DCA.commissionFee();
+
+        uint256 amountFee = amountIn * commissionFee / DCA.BASIS_POINTS();
+        uint256 amountAfterHandleFee = amountIn - amountFee;
+
+        vm.expectEmit(address(fakeRouter));
+        emit MultiHopSwapExecuted(swapPath, address(user), amountAfterHandleFee, amountAfterHandleFee);
+
+        vm.expectEmit(address(DCA));
+        emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountAfterHandleFee, amountAfterHandleFee);
+
+        vm.prank(worker);
+        DCA.executeMultihopPurchase(
+            0,
+            ISwapRouter.ExactInputParams({
+                path: swapPath,
+                recipient: user,
+                deadline: 0, // not used in test
+                amountIn: amountIn,
+                amountOutMinimum: 1 // not used in test
+            })
+        );
+        assertEq(assetIn.balanceOf(vault), amountFee); // 5 % of amountIn
+    }
+
+    function test_singlePurchaseWithFee() public {
+        uint256 amountIn = 1000000;
+        ERC20 assetIn = assetsHelper.assets(0);
+        ERC20 assetOut = assetsHelper.assets(1);
+        vm.warp(block.timestamp + DCA.EXECUTION_COOLDOWN());
+        assetsHelper.dealTokens(assetIn, user, amountIn);
+
+        vm.prank(user);
+        assetIn.approve(address(DCA), amountIn);
+
+        vm.prank(admin);
+        DCA.setCommissionFee(50); // 5 %
+
+        uint256 commissionFee = DCA.commissionFee();
+
+        uint256 amountFee = amountIn * commissionFee / DCA.BASIS_POINTS();
+        uint256 amountAfterHandleFee = amountIn - amountFee;
+
+        vm.expectEmit(address(fakeRouter));
+        emit SwapExecuted(
+            address(assetIn), address(assetOut), address(user), amountAfterHandleFee, amountAfterHandleFee
+        );
+
+        vm.expectEmit(address(DCA));
+        emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountAfterHandleFee, amountAfterHandleFee);
+
+        vm.prank(worker);
+        DCA.executeSinglePurchase(
+            0,
+            ISwapRouter.ExactInputSingleParams({
+                tokenIn: address(assetIn),
+                tokenOut: address(assetOut),
+                fee: 0,
+                recipient: user,
+                deadline: 0, // not used in test
+                amountIn: amountIn,
+                amountOutMinimum: amountIn,
+                sqrtPriceLimitX96: 0 // not used in test
+            })
+        );
+        assertEq(assetIn.balanceOf(vault), amountFee); // 5 % of amountIn
+    }
+
     function test_openPosition() public {
         address[] memory assetsAddresses = assetsHelper.getAssetsAddresses();
-        address tokenToSpend = assetsAddresses[1];
-        address tokenToBuy = assetsAddresses[0];
+        address tokenToSpend = assetsAddresses[0];
+        address tokenToBuy = assetsAddresses[1];
         uint256 singleSpendAmount = 1;
         vm.prank(user);
         DCA.openPosition(
@@ -204,5 +288,49 @@ contract DcaV3Test is Test {
 
         assertEq(targetAsset.balanceOf(recipient), tokensAmount);
         assertEq(targetAsset.balanceOf(user), 0);
+    }
+
+    function test_initialCommissionFeeMultiplier() public {
+        vm.prank(user);
+        uint256 initialtCommissionFeeMultiplier = 0;
+        assertEq(DCA.commissionFee(), initialtCommissionFeeMultiplier);
+    }
+
+    function test_initialAdminIsTreasury() public {
+        assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), DCA.TREASURY()));
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), DCA.TREASURY()));
+    }
+
+    function test_revertIfsetCommissionFeeMultiplierFromNotAdmin() public {
+        address notAdmin = makeAddr("notAdmin");
+        vm.prank(notAdmin);
+        vm.expectRevert("Must have admin role to set commission fee");
+        DCA.setCommissionFee(1);
+    }
+
+    function test_setCommissionFeeMultiplierFromAdmin() public {
+        vm.prank(admin);
+        DCA.setCommissionFee(5);
+        assertEq(DCA.commissionFee(), 5);
+    }
+
+    function test_addNewAdmin() public {
+        address newAdmin = makeAddr("newAdmin");
+        // Check if the vault has the DEFAULT_ADMIN_ROLE
+        assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), vault), "Vault does not have the DEFAULT_ADMIN_ROLE");
+
+        // Now, grant the ADMIN_ROLE to the new wallet
+        vm.startPrank(vault);
+
+        DCA.grantRole(DCA.ADMIN_ROLE(), newAdmin);
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), newAdmin));
+    }
+
+    function test_removeAdmin() public {
+        vm.startPrank(vault);
+
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), admin));
+        DCA.revokeRole(DCA.ADMIN_ROLE(), admin);
+        assertFalse(DCA.hasRole(DCA.ADMIN_ROLE(), admin));
     }
 }

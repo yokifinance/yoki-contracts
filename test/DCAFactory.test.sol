@@ -22,8 +22,8 @@ contract DCAFactoryTest is Test {
         owner = makeAccount("owner").addr;
         address worker = makeAccount("worker").addr;
         initialPosition = IDCA.Position(owner, worker, 10, assets[0], assets[1], 0);
-        address dcaImp = address(0xf52Aea45dFDE4669C73010D4C47E9e0c75E5c8ca); // TODO: figure out what contract this is
-        factory = new DCAV3Factory(address(assetsWhitelist), dcaImp);
+        DCAV3 dcaImp = new DCAV3(); 
+        factory = new DCAV3Factory(address(assetsWhitelist), address(dcaImp));
     }
 
     function test_factoryCreateDCA() public {
