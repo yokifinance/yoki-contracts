@@ -16,8 +16,8 @@ contract DeployDCAV3Factory is Script {
     }
 
     function run() external returns (DCAV3Factory) {
-        address assetsWhitelist = 0x55767e19Dd3Aa623a4A2537cA2DE29bA95E740f7;
-        address dcav3Implementation = 0x55767e19Dd3Aa623a4A2537cA2DE29bA95E740f7;
+        address assetsWhitelist = 0x725edF790C82812e8C113bc6cAb1a03e4Ef7EC1A;
+        address dcav3Implementation = 0xb1340E58954513b432875C0939D795bB01e3b907;
         return run(assetsWhitelist, dcav3Implementation);
     }
 }

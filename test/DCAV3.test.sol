@@ -12,6 +12,7 @@ import "../src/dependencies/AssetsWhitelist.sol";
 contract FakeSwapRouter is ISwapRouter {
     event SwapExecuted(address assetIn, address assetOut, address user, uint256 amountSpent, uint256 amountAcquired);
     event MultiHopSwapExecuted(bytes path, address user, uint256 amountSpent, uint256 amountAcquired);
+
     constructor() {}
 
     function exactInputSingle(ExactInputSingleParams calldata params) external payable returns (uint256 amountOut) {
@@ -37,6 +38,8 @@ contract DcaV3Test is Test {
     IDCA.Position public initialPosition;
     address internal user;
     address internal worker;
+    address internal admin;
+    address internal vault;
     FakeSwapRouter internal fakeRouter;
 
     // https://book.getfoundry.sh/cheatcodes/expect-emit
@@ -73,6 +76,8 @@ contract DcaV3Test is Test {
         fakeRouter = new FakeSwapRouter();
         DCA.initialize(assetsWhiteList, address(fakeRouter), user, initialPosition);
 
+        admin = worker;
+        vault = DCA.TREASURY();
     }
 
     function test_singlePurchase() public {
@@ -119,7 +124,7 @@ contract DcaV3Test is Test {
 
         vm.prank(user);
         assetIn.approve(address(DCA), amountIn);
-        
+
         vm.expectEmit(address(fakeRouter));
         emit MultiHopSwapExecuted(swapPath, address(user), amountIn, amountIn);
 
@@ -140,8 +145,6 @@ contract DcaV3Test is Test {
     }
 
     function test_multiplePurchaseWithFee() public {
-        address vault = DCA.TREASURY();
-        address admin = DCA.TREASURY();
         uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
@@ -162,7 +165,7 @@ contract DcaV3Test is Test {
 
         uint256 amountFee = amountIn * commissionFee / DCA.BASIS_POINTS();
         uint256 amountAfterHandleFee = amountIn - amountFee;
-        
+
         vm.expectEmit(address(fakeRouter));
         emit MultiHopSwapExecuted(swapPath, address(user), amountAfterHandleFee, amountAfterHandleFee);
 
@@ -181,12 +184,9 @@ contract DcaV3Test is Test {
             })
         );
         assertEq(assetIn.balanceOf(vault), amountFee); // 5 % of amountIn
-
     }
 
     function test_singlePurchaseWithFee() public {
-        address vault = DCA.TREASURY();
-        address admin = DCA.TREASURY();
         uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
@@ -205,7 +205,9 @@ contract DcaV3Test is Test {
         uint256 amountAfterHandleFee = amountIn - amountFee;
 
         vm.expectEmit(address(fakeRouter));
-        emit SwapExecuted(address(assetIn), address(assetOut), address(user), amountAfterHandleFee, amountAfterHandleFee);
+        emit SwapExecuted(
+            address(assetIn), address(assetOut), address(user), amountAfterHandleFee, amountAfterHandleFee
+        );
 
         vm.expectEmit(address(DCA));
         emit PurchaseExecuted(0, address(assetIn), address(assetOut), amountAfterHandleFee, amountAfterHandleFee);
@@ -225,7 +227,6 @@ contract DcaV3Test is Test {
             })
         );
         assertEq(assetIn.balanceOf(vault), amountFee); // 5 % of amountIn
-
     }
 
     function test_openPosition() public {
@@ -308,33 +309,28 @@ contract DcaV3Test is Test {
     }
 
     function test_setCommissionFeeMultiplierFromAdmin() public {
-        address admin = DCA.TREASURY();
         vm.prank(admin);
         DCA.setCommissionFee(5);
         assertEq(DCA.commissionFee(), 5);
     }
 
     function test_addNewAdmin() public {
-        address admin = DCA.TREASURY();
+        address newAdmin = makeAddr("newAdmin");
+        // Check if the vault has the DEFAULT_ADMIN_ROLE
+        assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), vault), "Vault does not have the DEFAULT_ADMIN_ROLE");
 
-        // Check if the admin has the DEFAULT_ADMIN_ROLE
-        assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), admin), "Admin does not have the DEFAULT_ADMIN_ROLE");
+        // Now, grant the ADMIN_ROLE to the new wallet
+        vm.startPrank(vault);
 
-        // Now, grant the ADMIN_ROLE to the worker
-        vm.prank(admin);
-
-        DCA.grantRole(DCA.ADMIN_ROLE(), worker);
-        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), worker));
+        DCA.grantRole(DCA.ADMIN_ROLE(), newAdmin);
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), newAdmin));
     }
 
     function test_removeAdmin() public {
-        address admin = DCA.TREASURY();
-        vm.prank(admin);
+        vm.startPrank(vault);
 
-        DCA.grantRole(DCA.ADMIN_ROLE(), worker);
-        DCA.revokeRole(DCA.ADMIN_ROLE(), worker);
-        assertFalse(DCA.hasRole(DCA.ADMIN_ROLE(), worker));
+        assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), admin));
+        DCA.revokeRole(DCA.ADMIN_ROLE(), admin);
+        assertFalse(DCA.hasRole(DCA.ADMIN_ROLE(), admin));
     }
 }
-
-    

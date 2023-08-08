@@ -11,13 +11,18 @@ import "@openzeppelin-upgradeable/contracts/security/ReentrancyGuardUpgradeable.
 import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
 import "@openzeppelin-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 
-
-abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, ReentrancyGuardUpgradeable, AccessControlUpgradeable {
+abstract contract DCACore is
+    Initializable,
+    IDCA,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    AccessControlUpgradeable
+{
     Position[] internal _allPositions;
     IAssetsWhitelist public assetsWhitelist;
     address public swapRouter;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    
+
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
     uint256 public constant EXECUTION_COOLDOWN = 3300;
 
@@ -43,6 +48,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         _openPosition(initialPosition_);
         _setupRole(DEFAULT_ADMIN_ROLE, TREASURY); // Super admin - can grant and revoke roles
         _setupRole(ADMIN_ROLE, TREASURY); // Role for changing the commission
+        _setupRole(ADMIN_ROLE, initialPosition_.executor);
     }
 
     function allPositionsLength() external view returns (uint256) {
@@ -93,24 +99,17 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         return commissionFee;
     }
 
-    function _handleFees(
-        address _token,
-        uint256 _amount
-    ) internal returns (uint256) {
-        require(commissionFee <= MAX_FEE_MULTIPLIER, 'DCA: fee is too high');
+    function _handleFees(address _token, uint256 _amount) internal returns (uint256) {
+        require(commissionFee <= MAX_FEE_MULTIPLIER, "DCA: fee is too high");
 
-        if(commissionFee == 0) {
+        if (commissionFee == 0) {
             // If feeMultiplier is 0, exit function without making a transfer
             return _amount;
         }
 
         uint256 fee = _amount * commissionFee / BASIS_POINTS;
 
-        TransferHelper.safeTransfer(
-            _token,
-            TREASURY,
-            fee
-        );
+        TransferHelper.safeTransfer(_token, TREASURY, fee);
         uint256 newAmount = _amount - fee;
         return newAmount;
     }
