@@ -80,19 +80,17 @@ contract AssetsWhitelistTest is Test {
         address removedSpendAsset = assetsToSpend[0];
         address removedBuyAsset = assetsToSpend[0];
 
-        vm.prank(notAdmin);
+        vm.startPrank(notAdmin);
+
         vm.expectRevert("Must have admin role to edit the whitelist");
         assetsWhitelist.whitelistAssetToSpend(newAssetToSpend);
 
-        vm.prank(notAdmin);
         vm.expectRevert("Must have admin role to edit the whitelist");
         assetsWhitelist.whitelistAssetToBuy(newAssetToBuy);
 
-        vm.prank(notAdmin);
         vm.expectRevert("Must have admin role to edit the whitelist");
         assetsWhitelist.removeAssetToSpend(removedSpendAsset);
 
-        vm.prank(notAdmin);
         vm.expectRevert("Must have admin role to edit the whitelist");
         assetsWhitelist.removeAssetToBuy(removedBuyAsset);
 
