@@ -8,12 +8,15 @@ contract AssetsWhitelist is IAssetsWhitelist, AccessControl {
     mapping(address => bool) internal _whitelistedToSpend;
     mapping(address => bool) internal _whitelistedToBuy;
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+    address public executor;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
-    constructor(address[] memory assetsToSpend_, address[] memory assetsToBuy_) {
+    constructor(address executor_, address[] memory assetsToSpend_, address[] memory assetsToBuy_) {
         uint256 len = assetsToSpend_.length;
+        executor = executor_;
         _setupRole(DEFAULT_ADMIN_ROLE, TREASURY); // Super admin - can grant and revoke roles
         _setupRole(ADMIN_ROLE, TREASURY); // Role for editing the whitelist
+        _setupRole(ADMIN_ROLE, executor); // Tech user
 
         for (uint256 i = 0; i < len; i++) {
             _whitelistAssetToSpend(assetsToSpend_[i]);

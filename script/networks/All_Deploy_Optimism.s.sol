@@ -24,8 +24,10 @@ contract DeployAll is Script {
         core_assets_to_buy[1] = 0x4200000000000000000000000000000000000042; // OP
         core_assets_to_buy[2] = 0x4200000000000000000000000000000000000006; // WETH
 
+        address worker = 0xC7936849F96Efbb9a50509DA6EF90eea537A74A6; 
+
         console.log("Deploying whitelist");
-        AssetsWhitelist whitelist = (new DeployAssetsWhitelist()).run(core_assets_to_spend, core_assets_to_buy);
+        AssetsWhitelist whitelist = (new DeployAssetsWhitelist()).run(worker, core_assets_to_spend, core_assets_to_buy);
         console.log("Whitelist deployed: ", address(whitelist));
 
         console.log("Deploying DCAV3 Implementation for later cloning");

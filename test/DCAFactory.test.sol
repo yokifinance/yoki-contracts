@@ -12,15 +12,16 @@ contract DCAFactoryTest is Test {
     address[] public assets;
     AssetsWhitelist public assetsWhitelist;
     address public owner;
+    address public worker;
     IDCA.Position public initialPosition;
     DCAV3Factory public factory;
 
     function setUp() public {
+        owner = makeAddr("owner");
+        worker = makeAddr("worker");
         assetsHelper = new AssetsHelper(2);
         assets = assetsHelper.getAssetsAddresses();
-        assetsWhitelist = new AssetsWhitelist(assets, assets);
-        owner = makeAccount("owner").addr;
-        address worker = makeAccount("worker").addr;
+        assetsWhitelist = new AssetsWhitelist(worker, assets, assets);
         initialPosition = IDCA.Position(owner, worker, 10, assets[0], assets[1], 0);
         DCAV3 dcaImp = new DCAV3(); 
         factory = new DCAV3Factory(address(assetsWhitelist), address(dcaImp));
