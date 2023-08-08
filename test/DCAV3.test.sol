@@ -37,6 +37,8 @@ contract DcaV3Test is Test {
     IDCA.Position public initialPosition;
     address internal user;
     address internal worker;
+    address internal admin;
+    address internal vault;
     FakeSwapRouter internal fakeRouter;
 
     // https://book.getfoundry.sh/cheatcodes/expect-emit
@@ -73,6 +75,8 @@ contract DcaV3Test is Test {
         fakeRouter = new FakeSwapRouter();
         DCA.initialize(assetsWhiteList, address(fakeRouter), user, initialPosition);
 
+        admin = DCA.TREASURY();
+        vault = DCA.TREASURY();
     }
 
     function test_singlePurchase() public {
@@ -140,8 +144,6 @@ contract DcaV3Test is Test {
     }
 
     function test_multiplePurchaseWithFee() public {
-        address vault = DCA.TREASURY();
-        address admin = DCA.TREASURY();
         uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
@@ -185,8 +187,6 @@ contract DcaV3Test is Test {
     }
 
     function test_singlePurchaseWithFee() public {
-        address vault = DCA.TREASURY();
-        address admin = DCA.TREASURY();
         uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
         ERC20 assetOut = assetsHelper.assets(1);
@@ -308,28 +308,24 @@ contract DcaV3Test is Test {
     }
 
     function test_setCommissionFeeMultiplierFromAdmin() public {
-        address admin = DCA.TREASURY();
         vm.prank(admin);
         DCA.setCommissionFee(5);
         assertEq(DCA.commissionFee(), 5);
     }
 
     function test_addNewAdmin() public {
-        address admin = DCA.TREASURY();
-
         // Check if the admin has the DEFAULT_ADMIN_ROLE
         assertTrue(DCA.hasRole(DCA.DEFAULT_ADMIN_ROLE(), admin), "Admin does not have the DEFAULT_ADMIN_ROLE");
 
         // Now, grant the ADMIN_ROLE to the worker
-        vm.prank(admin);
+        vm.startPrank(admin);
 
         DCA.grantRole(DCA.ADMIN_ROLE(), worker);
         assertTrue(DCA.hasRole(DCA.ADMIN_ROLE(), worker));
     }
 
     function test_removeAdmin() public {
-        address admin = DCA.TREASURY();
-        vm.prank(admin);
+        vm.startPrank(admin);
 
         DCA.grantRole(DCA.ADMIN_ROLE(), worker);
         DCA.revokeRole(DCA.ADMIN_ROLE(), worker);
