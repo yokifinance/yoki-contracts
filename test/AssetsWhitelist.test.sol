@@ -10,7 +10,8 @@ contract AssetsWhitelistTest is Test {
     address[] public assetsToBuy;
     address public notListedAsset;
     AssetsWhitelist assetsWhitelist;
-    address admin;
+    address internal admin;
+    address internal worker;
 
     function setUp() public {
         assetsHelper = new AssetsHelper(2);
@@ -20,6 +21,7 @@ contract AssetsWhitelistTest is Test {
         notListedAsset = address(assetsHelper.generateAsset("UnlistedAsset", "UA"));
         assetsWhitelist = new AssetsWhitelist(assetsToSpend, assetsToBuy);
         admin = assetsWhitelist.TREASURY();
+        worker = makeAddr("worker");
     }
 
     function test_checkWhitelisted() public {
@@ -95,5 +97,23 @@ contract AssetsWhitelistTest is Test {
         assetsWhitelist.removeAssetToBuy(removedBuyAsset);
 
 
+    }
+    function test_addNewAdmin() public {
+        // Check if the admin has the DEFAULT_ADMIN_ROLE
+        assertTrue(assetsWhitelist.hasRole(assetsWhitelist.DEFAULT_ADMIN_ROLE(), admin), "Admin does not have the DEFAULT_ADMIN_ROLE");
+
+        // Now, grant the ADMIN_ROLE to the worker
+        vm.startPrank(admin);
+
+        assetsWhitelist.grantRole(assetsWhitelist.ADMIN_ROLE(), worker);
+        assertTrue(assetsWhitelist.hasRole(assetsWhitelist.ADMIN_ROLE(), worker));
+    }
+
+    function test_removeAdmin() public {
+        vm.startPrank(admin);
+
+        assetsWhitelist.grantRole(assetsWhitelist.ADMIN_ROLE(), worker);
+        assetsWhitelist.revokeRole(assetsWhitelist.ADMIN_ROLE(), worker);
+        assertFalse(assetsWhitelist.hasRole(assetsWhitelist.ADMIN_ROLE(), worker));
     }
 }
