@@ -6,13 +6,14 @@ import {Script} from "forge-std/Script.sol";
 import {AssetsWhitelist} from "../src/dependencies/AssetsWhitelist.sol";
 
 contract DeployAssetsWhitelist is Script {
-    function run(address[] memory core_assets_to_spend, address[] memory core_assets_to_buy)
+    function run(address worker, address[] memory core_assets_to_spend, address[] memory core_assets_to_buy)
         public
         returns (AssetsWhitelist)
     {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         AssetsWhitelist assetsWhitelist = new AssetsWhitelist(
+            worker,
             core_assets_to_spend,
             core_assets_to_buy
         );
@@ -33,6 +34,8 @@ contract DeployAssetsWhitelist is Script {
         core_assets_to_buy[1] = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619; // WETH
         core_assets_to_buy[2] = 0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6; // WBTC
 
-        return run(core_assets_to_spend, core_assets_to_buy);
+        address worker = 0xC7936849F96Efbb9a50509DA6EF90eea537A74A6;
+
+        return run(worker, core_assets_to_spend, core_assets_to_buy);
     }
 }

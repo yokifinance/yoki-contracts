@@ -63,7 +63,7 @@ contract DcaV3Test is Test {
         vm.prank(user);
         vm.deal(user, 1 ether);
 
-        assetsWhiteList = new AssetsWhitelist(assetsAddresses, assetsAddresses);
+        assetsWhiteList = new AssetsWhitelist(worker, assetsAddresses, assetsAddresses);
         DCA = new DCAV3();
         initialPosition = IDCA.Position({
             beneficiary: user,

@@ -23,8 +23,10 @@ contract DeployAll is Script {
         core_assets_to_buy[1] = 0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c; // BTCB
         core_assets_to_buy[2] = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c; // WBNB
 
+        address worker = 0xC7936849F96Efbb9a50509DA6EF90eea537A74A6; 
+
         console.log("Deploying whitelist");
-        AssetsWhitelist whitelist = (new DeployAssetsWhitelist()).run(core_assets_to_spend, core_assets_to_buy);
+        AssetsWhitelist whitelist = (new DeployAssetsWhitelist()).run(worker, core_assets_to_spend, core_assets_to_buy);
         console.log("Whitelist deployed: ", address(whitelist));
 
         console.log("Deploying DCAV3 Implementation for later cloning");
