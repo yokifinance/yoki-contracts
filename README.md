@@ -23,9 +23,25 @@ Run
 
 Production:
 
+`polygon`
+
 ```
 export $(grep -v '^#' .env | xargs)
 forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
+```
+
+`optimism`
+
+```
+export $(grep -v '^#' .env | xargs)
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Optimism.s.sol --broadcast --legacy --verify
+```
+
+`bsc`
+
+```
+export $(grep -v '^#' .env | xargs)
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Binance.s.sol --broadcast --legacy --verify
 ```
 
 `note: deploy goes for single chain only. IF you need to deploy on multiple chains - dont forget to update "RPC" and "CHAIN_ID" values in env file before rerunning both commands`
@@ -142,6 +158,52 @@ example:
 
 ## Now we can test locally deployed contract with metamask / FE app / cast / hardhat / etc.
 
-# Deploy to production
+# Deployed contracts
 
-TBD
+## Factory
+
+| chain    | env   | address                                    |
+| -------- | ----- | ------------------------------------------ |
+| Polygon  | dev   | 0x3dD417F3922801D55Cc2a6d8838e82527026EBBd |
+| Polygon  | stage | 0x                                         |
+| Polygon  | prod  | 0x                                         |
+|          |
+| Optimism | dev   | 0xFFcEcBAaEeF0D00b12b4cB728B4D96C46C8e3B5F |
+| Optimism | stage | 0x                                         |
+| Optimism | prod  | 0x                                         |
+|          |
+| Binance  | dev   | 0x02c63197d2f93054398a706867aE0CAaf33002b2 |
+| Binance  | stage | 0x                                         |
+| Binance  | prod  | 0x                                         |
+
+## Whitelist
+
+| chain    | env   | address                                    |
+| -------- | ----- | ------------------------------------------ |
+| Polygon  | dev   | 0x09633600c0a8852E38eB2bC3FC386F79A7D71edd |
+| Polygon  | stage | 0x                                         |
+| Polygon  | prod  | 0x                                         |
+|          |
+| Optimism | dev   | 0x28ab9dD7c571499A16bBfd4A851E6d006823f442 |
+| Optimism | stage | 0x                                         |
+| Optimism | prod  | 0x                                         |
+|          |
+| Binance  | dev   | 0x1B8EE524844DE43827F13007C3360024D7d09191 |
+| Binance  | stage | 0x                                         |
+| Binance  | prod  | 0x                                         |
+
+## Dca implementation
+
+| chain    | env   | address                                    |
+| -------- | ----- | ------------------------------------------ |
+| Polygon  | dev   | 0xFb0e7c4757baE32F612f940fce5b9493ef30b682 |
+| Polygon  | stage | 0x                                         |
+| Polygon  | prod  | 0x                                         |
+|          |
+| Optimism | dev   | 0xfc81D5a2FcBC5b12388A1a9589da68635E7b01F1 |
+| Optimism | stage | 0x                                         |
+| Optimism | prod  | 0x                                         |
+|          |
+| Binance  | dev   | 0xF8d3De6F50d9C3392e540A922FCD0cA3a69e9a80 |
+| Binance  | stage | 0x                                         |
+| Binance  | prod  | 0x                                         |

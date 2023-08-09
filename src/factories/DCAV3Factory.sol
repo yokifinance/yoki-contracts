@@ -16,15 +16,16 @@ contract DCAV3Factory {
     address public assetsWhitelist;
     address public dcaImpl;
 
-    address public constant SWAP_ROUTER = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+    address public SWAP_ROUTER;
 
     event DcaDeployed(address indexed newDcaAddress, address indexed newOwner);
 
-    constructor(address assetsWhitelist_, address dcaImpl_) {
+    constructor(address swapRouter_, address assetsWhitelist_, address dcaImpl_) {
         require(assetsWhitelist_ != address(0));
         require(dcaImpl_ != address(0));
         assetsWhitelist = assetsWhitelist_;
         dcaImpl = dcaImpl_;
+        SWAP_ROUTER = swapRouter_;
     }
 
     function createDCA(address newOwner, IDCA.Position calldata initialPosition)

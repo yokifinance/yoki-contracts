@@ -23,8 +23,8 @@ contract DCAFactoryTest is Test {
         assets = assetsHelper.getAssetsAddresses();
         assetsWhitelist = new AssetsWhitelist(worker, assets, assets);
         initialPosition = IDCA.Position(owner, worker, 10, assets[0], assets[1], 0);
-        DCAV3 dcaImp = new DCAV3(); 
-        factory = new DCAV3Factory(address(assetsWhitelist), address(dcaImp));
+        DCAV3 dcaImp = new DCAV3();
+        factory = new DCAV3Factory(worker, address(assetsWhitelist), address(dcaImp));
     }
 
     function test_factoryCreateDCA() public {

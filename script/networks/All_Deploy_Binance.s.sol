@@ -14,6 +14,8 @@ import {DCAV3Factory} from "../../src/factories/DCAV3Factory.sol";
 
 contract DeployAll is Script {
     function run() external {
+        // pancake swap v2
+        address swapRouter = 0x10ED43C718714eb63d5aA57B78B54704E256024E;
         address[] memory core_assets_to_spend = new address[](2);
         core_assets_to_spend[0] = 0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56; // BUSD
         core_assets_to_spend[1] = 0x55d398326f99059fF775485246999027B3197955; // USDT
@@ -23,7 +25,9 @@ contract DeployAll is Script {
         core_assets_to_buy[1] = 0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c; // BTCB
         core_assets_to_buy[2] = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c; // WBNB
 
-        address worker = 0xC7936849F96Efbb9a50509DA6EF90eea537A74A6; 
+        address worker = 0x79dAe73Ec88a11FA4B9381Fe92865a1EAE5f3125; // dev
+        // address worker = 0x79dAe73Ec88a11FA4B9381Fe92865a1EAE5f3125; // stage
+        // address worker = 0x31F5c1B1fF78AF6FB721cD1376f1B7D69929A794; // prod
 
         console.log("Deploying whitelist");
         AssetsWhitelist whitelist = (new DeployAssetsWhitelist()).run(worker, core_assets_to_spend, core_assets_to_buy);
@@ -34,7 +38,7 @@ contract DeployAll is Script {
         console.log("DCAV3 deployed: ", address(dcaImp));
 
         console.log("Deploying factory");
-        DCAV3Factory factory = (new DeployDCAV3Factory()).run(address(whitelist), address(dcaImp));
+        DCAV3Factory factory = (new DeployDCAV3Factory()).run(swapRouter, address(whitelist), address(dcaImp));
         console.log("Factory deployed: ", address(factory));
     }
 }
