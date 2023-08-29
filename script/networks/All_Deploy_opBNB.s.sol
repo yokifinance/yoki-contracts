@@ -14,21 +14,15 @@ import {DCAV3Factory} from "../../src/factories/DCAV3Factory.sol";
 
 contract DeployAll is Script {
     function run() external {
-        address swapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-        address[] memory core_assets_to_spend = new address[](4);
-        core_assets_to_spend[0] = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI
-        core_assets_to_spend[1] = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174; // USDC
-        core_assets_to_spend[2] = 0xc2132D05D31c914a87C6611C10748AEb04B58e8F; // USDT
-        core_assets_to_spend[3] = 0xE111178A87A3BFf0c8d18DECBa5798827539Ae99; // EURS
+        // fakerouter
+        address swapRouter = 0x6c832ea9E6e31B4a88A03B00B809c4584C095d67;
+        address[] memory core_assets_to_spend = new address[](2);
+        core_assets_to_spend[0] = 0x0f81dB3cE47e70029060Da8FcA13996cFc2A1075; // FBUSD
+        core_assets_to_spend[1] = 0x656A4fcCb761B5382ac2C6607D07b85719b9FF3C; // FBTCB
 
-        address[] memory core_assets_to_buy = new address[](7);
-        core_assets_to_buy[0] = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270; // WMATIC
-        core_assets_to_buy[1] = 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619; // WETH
-        core_assets_to_buy[2] = 0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6; // WBTC
-        core_assets_to_buy[3] = 0xB9638272aD6998708de56BBC0A290a1dE534a578; // IQ
-        core_assets_to_buy[4] = 0xF689E85988d3a7921E852867CE49F53388985E6d; // MobiFi
-        core_assets_to_buy[5] = 0x3A58a54C066FdC0f2D55FC9C89F0415C92eBf3C4; // stMatic
-        core_assets_to_buy[6] = 0xC3C7d422809852031b44ab29EEC9F1EfF2A58756; // LDO
+        address[] memory core_assets_to_buy = new address[](2);
+        core_assets_to_buy[0] = 0x0f81dB3cE47e70029060Da8FcA13996cFc2A1075; // FBUSD
+        core_assets_to_buy[1] = 0x656A4fcCb761B5382ac2C6607D07b85719b9FF3C; // FBTCB
 
         address worker = 0x79dAe73Ec88a11FA4B9381Fe92865a1EAE5f3125; // dev
         // address worker = 0x79dAe73Ec88a11FA4B9381Fe92865a1EAE5f3125; // stage
