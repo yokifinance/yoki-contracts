@@ -100,61 +100,7 @@ Don't forget to check USDT balance of your wallet
 
 ## Deploy contract to testnet
 
-Note: on local chain wallets will be saved between restarts, however - deployed contracts will not.
-
-1. Compile source files
-   `forge build`
-   result can be found in "out" and "cache" folders.
-
-2. Deploy DCAV3Factory to local node
-
-0x59698022f08FF0d0B6EDbC956Fd9c0596543A983 - production whitelist contract
-0xf52Aea45dFDE4669C73010D4C47E9e0c75E5c8ca - IDC Implementation (???)
-`forge create DCAV3Factory --constructor-args 0x59698022f08FF0d0B6EDbC956Fd9c0596543A983 0xf52Aea45dFDE4669C73010D4C47E9e0c75E5c8ca --unlocked --from \*Testnet wallet address\* --rpc-url http://127.0.0.1:8545 --legacy`
-Testnet wallet address can be found in output when started anvil. Notice that we need address, _not_ private key.
-
-Don't forget to save deployed contract address somewhere.
-
-Optional:
-You can check contract being successfully deployed using
-`case code \* contract address \*`
-as long as response is not "0x" - contract successfully deployed
-Alternatively - you can open logs in anvil and see contract creation transaction there
-
-3. Factory a DCA contract
-   WIP: code below doesn't work for me yet
-
-Pay attention at parts that need to be replaced, marked with "{}" brackets.
-`cast send {contract_address} --unlocked --from {user_address} "createDCA(address,(address,address,uint256,address,address,uint256))(address)" {user_address} "({user_address},{worker_address},{amount_to_spend},0xc2132D05D31c914a87C6611C10748AEb04B58e8F,0xb33EaAd8d922B1083446DC23f610c2567fB5180f,0)"`
-example:
-`cast send 0xb07BE8eE8D505245540a7d34De69C91A2A69D292 --unlocked --from 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43 "createDCA(address,(address,address,uint256,address,address,uint256))(address)" 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43 "(0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43,0x2F81b3BAFC24d174D370678EfDe14A69F43974Cc,2,0xc2132D05D31c914a87C6611C10748AEb04B58e8F,0xb33EaAd8d922B1083446DC23f610c2567fB5180f,0)"`
-
-## Legend:
-
-0xfbD8ba80BcCE20135ba46e0BC300533dFE9a2F3a - admin, who owns factory
-0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43 - user, who will call exchanges
-0x2F81b3BAFC24d174D370678EfDe14A69F43974Cc - worker, random address from anvil (will call swap commands)
-0xb07BE8eE8D505245540a7d34De69C91A2A69D292 - contract address
-"0xc2132D05D31c914a87C6611C10748AEb04B58e8F", # USDT contract address
-"0xb33EaAd8d922B1083446DC23f610c2567fB5180f", # UNI contract address
-
-`//                                                                                  newOwner                                    beneficiary                                executor                 singleSpendAmount  tokenToSpend(USDT)                          tokenToBuy(UNI)                            lastPurchaseTimestamp
-// "createDCA(address,(address,address,uint256,address,address,uint256))(address)" 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43 "(0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43,0x2F81b3BAFC24d174D370678EfDe14A69F43974Cc,2,0xc2132D05D31c914a87C6611C10748AEb04B58e8F,0xb33EaAd8d922B1083446DC23f610c2567fB5180f,0)"`
-
-## Alternative method using remix
-
-1. Add local network to metamask (127.0.0.1:8545)
-2. Add abi from out/DCAV3Factory
-3. Connect to contract deployed previously
-4. Call "deployDCA"
-   example input:
-   `0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43`
-   `["0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43", "0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43",2,"0xc2132D05D31c914a87C6611C10748AEb04B58e8F","0xb33EaAd8d922B1083446DC23f610c2567fB5180f",0]`
-
-   sungle purchase
-   `0`
-   // tokenIn // tokenOut // fee // benefeciary
-   `["0xb33EaAd8d922B1083446DC23f610c2567fB5180f", "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",0,"0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43",0, 2, 0, 0]`
+Use scripts from `/script` folder
 
 ## Now we can test locally deployed contract with metamask / FE app / cast / hardhat / etc.
 
@@ -164,46 +110,58 @@ example:
 
 | chain    | env   | address                                    |
 | -------- | ----- | ------------------------------------------ |
-| Polygon  | dev   | 0x3dD417F3922801D55Cc2a6d8838e82527026EBBd |
-| Polygon  | stage | 0x                                         |
+| Polygon  | dev   | 0xD966F00350352770F9A087A755F2Fb46a379B67f |
+| Polygon  | stage | 0xb98D003F017A452A33cDbAade4ED5Cb4B8EBA81c |
 | Polygon  | prod  | 0x                                         |
 |          |
-| Optimism | dev   | 0xFFcEcBAaEeF0D00b12b4cB728B4D96C46C8e3B5F |
-| Optimism | stage | 0x                                         |
+| Optimism | dev   | 0xC952e7E894bC6D9E217F483611Dd58142419618E |
+| Optimism | stage | 0x41b42a0cc89b9AA554e8fEEA5EFf893dD6eCD294 |
 | Optimism | prod  | 0x                                         |
 |          |
 | Binance  | dev   | 0x02c63197d2f93054398a706867aE0CAaf33002b2 |
 | Binance  | stage | 0x                                         |
 | Binance  | prod  | 0x                                         |
+|          |
+| opBNBtn  | dev   | 0xa65427d745Fa64d665C74688ed05793f07f1A037 |
+| opBNBtn  | stage | 0x                                         |
+| opBNBtn  | prod  | 0x                                         |
 
 ## Whitelist
 
 | chain    | env   | address                                    |
 | -------- | ----- | ------------------------------------------ |
-| Polygon  | dev   | 0x09633600c0a8852E38eB2bC3FC386F79A7D71edd |
-| Polygon  | stage | 0x                                         |
+| Polygon  | dev   | 0xa1c3DDCF368691ceFE6266051aF6601dF058c827 |
+| Polygon  | stage | 0x9338c26583509E0af29761101810fa5469910FE0 |
 | Polygon  | prod  | 0x                                         |
 |          |
-| Optimism | dev   | 0x28ab9dD7c571499A16bBfd4A851E6d006823f442 |
-| Optimism | stage | 0x                                         |
+| Optimism | dev   | 0xb1340E58954513b432875C0939D795bB01e3b907 |
+| Optimism | stage | 0xb1340E58954513b432875C0939D795bB01e3b907 |
 | Optimism | prod  | 0x                                         |
 |          |
 | Binance  | dev   | 0x1B8EE524844DE43827F13007C3360024D7d09191 |
 | Binance  | stage | 0x                                         |
 | Binance  | prod  | 0x                                         |
+|          |
+| opBNBtn  | dev   | 0x085DdF516F7d04eb8a09a204Eb40966435d62F83 |
+| opBNBtn  | stage | 0x                                         |
+| opBNBtn  | prod  | 0x                                         |
 
 ## Dca implementation
 
 | chain    | env   | address                                    |
 | -------- | ----- | ------------------------------------------ |
-| Polygon  | dev   | 0xFb0e7c4757baE32F612f940fce5b9493ef30b682 |
-| Polygon  | stage | 0x                                         |
+| Polygon  | dev   | 0xE8B720e4C37eAc0b512DA062b8317d9dC3c3E3F0 |
+| Polygon  | stage | 0x1fE25798d205D77CC8c9F0c7D4667F69aa93DDbe |
 | Polygon  | prod  | 0x                                         |
 |          |
-| Optimism | dev   | 0xfc81D5a2FcBC5b12388A1a9589da68635E7b01F1 |
-| Optimism | stage | 0x                                         |
+| Optimism | dev   | 0x86807bF5FaCEE7456882ffA1476b11657A135160 |
+| Optimism | stage | 0x86807bF5FaCEE7456882ffA1476b11657A135160 |
 | Optimism | prod  | 0x                                         |
 |          |
 | Binance  | dev   | 0xF8d3De6F50d9C3392e540A922FCD0cA3a69e9a80 |
 | Binance  | stage | 0x                                         |
 | Binance  | prod  | 0x                                         |
+|          |
+| opBNBtn  | dev   | 0xe3b23Ed609B84354B1d5031A7677be4Ae9517efA |
+| opBNBtn  | stage | 0x                                         |
+| opBNBtn  | prod  | 0x                                         |
