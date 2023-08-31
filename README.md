@@ -112,11 +112,11 @@ Use scripts from `/script` folder
 | -------- | ----- | ------------------------------------------ |
 | Polygon  | dev   | 0xD966F00350352770F9A087A755F2Fb46a379B67f |
 | Polygon  | stage | 0xb98D003F017A452A33cDbAade4ED5Cb4B8EBA81c |
-| Polygon  | prod  | 0x                                         |
+| Polygon  | prod  | 0xF8ce142e20f3c4209E8d1E0FAc4A307db4dfC975 |
 |          |
 | Optimism | dev   | 0xC952e7E894bC6D9E217F483611Dd58142419618E |
 | Optimism | stage | 0x41b42a0cc89b9AA554e8fEEA5EFf893dD6eCD294 |
-| Optimism | prod  | 0x                                         |
+| Optimism | prod  | 0xB920c7BEc8238f5374a1F9365f9BD2B88A2E9e0a |
 |          |
 | Binance  | dev   | 0x02c63197d2f93054398a706867aE0CAaf33002b2 |
 | Binance  | stage | 0x                                         |
@@ -132,11 +132,11 @@ Use scripts from `/script` folder
 | -------- | ----- | ------------------------------------------ |
 | Polygon  | dev   | 0xa1c3DDCF368691ceFE6266051aF6601dF058c827 |
 | Polygon  | stage | 0x9338c26583509E0af29761101810fa5469910FE0 |
-| Polygon  | prod  | 0x                                         |
+| Polygon  | prod  | 0xF5C9EE11c66c6709B847789E483e4029e0b30725 |
 |          |
 | Optimism | dev   | 0xb1340E58954513b432875C0939D795bB01e3b907 |
 | Optimism | stage | 0xb1340E58954513b432875C0939D795bB01e3b907 |
-| Optimism | prod  | 0x                                         |
+| Optimism | prod  | 0x5C06505E1fc8D1fA7EE955b258BB217695d7b48c |
 |          |
 | Binance  | dev   | 0x1B8EE524844DE43827F13007C3360024D7d09191 |
 | Binance  | stage | 0x                                         |
@@ -152,11 +152,11 @@ Use scripts from `/script` folder
 | -------- | ----- | ------------------------------------------ |
 | Polygon  | dev   | 0xE8B720e4C37eAc0b512DA062b8317d9dC3c3E3F0 |
 | Polygon  | stage | 0x1fE25798d205D77CC8c9F0c7D4667F69aa93DDbe |
-| Polygon  | prod  | 0x                                         |
+| Polygon  | prod  | 0xc347BA6f6A9Ce0dd4F4A351EaB30c8Ebde59028e |
 |          |
 | Optimism | dev   | 0x86807bF5FaCEE7456882ffA1476b11657A135160 |
 | Optimism | stage | 0x86807bF5FaCEE7456882ffA1476b11657A135160 |
-| Optimism | prod  | 0x                                         |
+| Optimism | prod  | 0xb8094af3aF822124688eFF0BB6cd6504C296CF2A |
 |          |
 | Binance  | dev   | 0xF8d3De6F50d9C3392e540A922FCD0cA3a69e9a80 |
 | Binance  | stage | 0x                                         |
