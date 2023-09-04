@@ -116,7 +116,7 @@ Use scripts from `/script` folder
 |          |
 | Optimism | dev   | 0xC952e7E894bC6D9E217F483611Dd58142419618E |
 | Optimism | stage | 0x41b42a0cc89b9AA554e8fEEA5EFf893dD6eCD294 |
-| Optimism | prod  | 0x39880C4fE1Dd01960d673Cc588F35471FBBEeC8a |
+| Optimism | prod  | 0x8a03Bf5a5d2Aeed434Caaa30db467073A551354f |
 |          |
 | Binance  | dev   | 0x02c63197d2f93054398a706867aE0CAaf33002b2 |
 | Binance  | stage | 0x                                         |
@@ -136,7 +136,7 @@ Use scripts from `/script` folder
 |          |
 | Optimism | dev   | 0xb1340E58954513b432875C0939D795bB01e3b907 |
 | Optimism | stage | 0xb1340E58954513b432875C0939D795bB01e3b907 |
-| Optimism | prod  | 0x7D3CDf66dFC0Ab8F569616316cab26922fb2e689 |
+| Optimism | prod  | 0x661e63c5fAc61aB0A8a3489CC814C021C2C4fde2 |
 |          |
 | Binance  | dev   | 0x1B8EE524844DE43827F13007C3360024D7d09191 |
 | Binance  | stage | 0x                                         |
