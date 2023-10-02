@@ -2,19 +2,9 @@
 src = "src"
 out = "out"
 libs = ["lib"]
+[etherscan]
+polygon = { key = "EII3M4G2MKTHAS6METKBJH149P8EFWV9ZP", url = "https://api.polygonscan.com/api" }
+bsc = { key = "B2JV9AVIVIWWDFDCB27KR1NJ35QEWS552H", url = "https://api.bscscan.com/api" }
+optimism = { key = "BPHPNQ1IYRT2FFUPIWQXN2Z7YY1P3IGCXN", url = "https://api-optimistic.etherscan.io/api" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
-
-remappings = [
-    "@solmate-utils/=lib/solmate/src/utils/",
-    "@openzeppelin/=lib/openzeppelin-contracts/",
-    "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable/",
-    "@uniswap/=lib/uniswap-v3-periphery/",
-    "@uniswap-v3-core/=lib/v3-core/",
-]
-
-[rpc_endpoints]
-sepolia = "${SEPOLIA_RPC_URL}"
-
-[etherscan]
-sepolia = { key = "${ETHERSCAN_TOKEN}" }

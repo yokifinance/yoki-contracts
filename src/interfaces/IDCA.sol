@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "../interfaces/IAssetsWhitelist.sol";
-import "@uniswap/contracts/interfaces/ISwapRouter.sol";
+import "@uniswap-periphery/contracts/interfaces/ISwapRouter.sol";
 
 interface IDCA {
     /**
@@ -17,15 +17,9 @@ interface IDCA {
         uint256 lastPurchaseTimestamp;
     }
 
-    event BeneficiaryChanged(
-        uint256 positionIndex,
-        address newBeneficiary
-    );
+    event BeneficiaryChanged(uint256 positionIndex, address newBeneficiary);
 
-    event SingleSpendAmountChanged(
-        uint256 positionIndex,
-        uint256 newSingleSpendAmount
-    );
+    event SingleSpendAmountChanged(uint256 positionIndex, uint256 newSingleSpendAmount);
 
     event PositionOpened(
         uint256 newPositionIndex,
@@ -37,14 +31,12 @@ interface IDCA {
     );
 
     event PurchaseExecuted(
-        uint256 positionIndex,
-        address tokenSpent,
-        address tokenAcquired,
-        uint256 amountSpent,
-        uint256 amountAcquired
+        uint256 positionIndex, address tokenSpent, address tokenAcquired, uint256 amountSpent, uint256 amountAcquired
     );
 
     event FundsRetrieved(address tokenRetrieved, uint256 amountRetrieved, address recipient);
+
+    event CommissionFeeChanged(uint256 newCommissionFee, address changedBy);
 
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
@@ -53,15 +45,9 @@ interface IDCA {
         Position calldata initialPosition_
     ) external;
 
-    function executeMultihopPurchase(
-        uint256 positionIndex,
-        ISwapRouter.ExactInputParams memory params
-    ) external;
+    function executeMultihopPurchase(uint256 positionIndex, ISwapRouter.ExactInputParams memory params) external;
 
-    function executeSinglePurchase(
-        uint256 positionIndex,
-        ISwapRouter.ExactInputSingleParams memory params
-    ) external;
+    function executeSinglePurchase(uint256 positionIndex, ISwapRouter.ExactInputSingleParams memory params) external;
 
     function allPositionsLength() external view returns (uint256);
 

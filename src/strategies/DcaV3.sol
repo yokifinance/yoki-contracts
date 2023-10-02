@@ -2,9 +2,9 @@
 pragma solidity ^0.8.10;
 pragma abicoder v2;
 
-import "./DCACore.sol";
+import "./DcaCore.sol";
 import "../libraries/Path.sol";
-import "@uniswap/contracts/interfaces/ISwapRouter.sol";
+import "@uniswap-periphery/contracts/interfaces/ISwapRouter.sol";
 
 contract DCAV3 is DCACore {
     using Path for bytes;
@@ -62,6 +62,9 @@ contract DCAV3 is DCACore {
             address(this),
             _params.amountIn
         );
+
+        uint256 amountAfterHandleFee = _handleFees(tokenIn, _params.amountIn);
+        _params.amountIn = amountAfterHandleFee;
 
         bytes memory tempPath;
 
@@ -127,6 +130,9 @@ contract DCAV3 is DCACore {
             address(this),
             _params.amountIn
         );
+
+        uint256 amountAfterHandleFee = _handleFees(tokenIn, _params.amountIn);
+        _params.amountIn = amountAfterHandleFee;
 
         require(tokenOut == _pos.tokenToBuy, "DCA: Wrong output token");
 

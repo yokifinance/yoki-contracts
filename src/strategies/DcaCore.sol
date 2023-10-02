@@ -2,24 +2,33 @@
 pragma solidity ^0.8.10;
 pragma abicoder v2;
 
-import "../interfaces/IDCA.sol";
-import "../interfaces/IAssetsWhitelist.sol";
+import "interfaces/IDCA.sol";
+import "interfaces/IAssetsWhitelist.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";
 import "@openzeppelin-upgradeable/contracts/security/ReentrancyGuardUpgradeable.sol";
-import '@uniswap/contracts/libraries/TransferHelper.sol';
+import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
+import "@openzeppelin-upgradeable/contracts/access/AccessControlUpgradeable.sol";
 
-abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+abstract contract DCACore is
+    Initializable,
+    IDCA,
+    OwnableUpgradeable,
+    ReentrancyGuardUpgradeable,
+    AccessControlUpgradeable
+{
     Position[] internal _allPositions;
     IAssetsWhitelist public assetsWhitelist;
     address public swapRouter;
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
     uint256 public constant EXECUTION_COOLDOWN = 3300;
 
     uint256 public constant BASIS_POINTS = 1000;
-    uint256 public constant MAX_FEE_MULTIPLIER = 100;
+    uint256 public constant MAX_FEE_MULTIPLIER = 50; // Represents 5%
+    uint256 public commissionFee = 0;
 
     function initialize(
         IAssetsWhitelist assetsWhitelist_,
@@ -27,8 +36,8 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         address newOwner_,
         Position calldata initialPosition_
     ) public override initializer {
-        require(address(assetsWhitelist_) != address(0), 'DCA: whitelist is the zero address');
-        require(swapRouter_ != address(0), 'DCA: swapRouter is the zero address');
+        require(address(assetsWhitelist_) != address(0), "DCA: whitelist is the zero address");
+        require(swapRouter_ != address(0), "DCA: swapRouter is the zero address");
 
         __Context_init_unchained();
         __Ownable_init_unchained();
@@ -37,6 +46,9 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
         swapRouter = swapRouter_;
         transferOwnership(newOwner_);
         _openPosition(initialPosition_);
+        _setupRole(DEFAULT_ADMIN_ROLE, TREASURY); // Super admin - can grant and revoke roles
+        _setupRole(ADMIN_ROLE, TREASURY); // Role for changing the commission
+        _setupRole(ADMIN_ROLE, initialPosition_.executor);
     }
 
     function allPositionsLength() external view returns (uint256) {
@@ -48,12 +60,12 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
     }
 
     function retrieveFunds(address[] memory assets, address recipient) external onlyOwner {
-        require(recipient != address(0), 'DCA: recipient is the zero address');
+        require(recipient != address(0), "DCA: recipient is the zero address");
 
         uint256 len = assets.length;
         uint256 balance;
 
-        for (uint i = 0; i < len; i++) {
+        for (uint256 i = 0; i < len; i++) {
             balance = IERC20(assets[i]).balanceOf(address(this));
             TransferHelper.safeTransfer(assets[i], recipient, balance);
 
@@ -62,7 +74,7 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
     }
 
     function setBeneficiary(uint256 positionIndex, address newBeneficiary) external onlyOwner {
-        require(newBeneficiary != address(0), 'DCA: new beneficiary is the zero address');
+        require(newBeneficiary != address(0), "DCA: new beneficiary is the zero address");
         Position storage pos = _allPositions[positionIndex];
         pos.beneficiary = newBeneficiary;
 
@@ -70,29 +82,50 @@ abstract contract DCACore is Initializable, IDCA, OwnableUpgradeable, Reentrancy
     }
 
     function setSingleSpendAmount(uint256 positionIndex, uint256 newSingleSpendAmount) external onlyOwner {
-        require(newSingleSpendAmount > 0, 'DCA: new spend amount is too small');
+        require(newSingleSpendAmount > 0, "DCA: new spend amount is too small");
         Position storage pos = _allPositions[positionIndex];
         pos.singleSpendAmount = newSingleSpendAmount;
 
         emit SingleSpendAmountChanged(positionIndex, newSingleSpendAmount);
     }
 
-    function openPosition(
-        Position calldata _newPosition
-    ) external onlyOwner {
+    function setCommissionFee(uint256 newCommissionFee) external returns (uint256) {
+        require(hasRole(ADMIN_ROLE, _msgSender()), "Must have admin role to set commission fee");
+        require(newCommissionFee <= MAX_FEE_MULTIPLIER, "Commission fee can't be higher than MAX_FEE_MULTIPLIER");
+
+        commissionFee = newCommissionFee;
+
+        emit CommissionFeeChanged(commissionFee, msg.sender);
+        return commissionFee;
+    }
+
+    function _handleFees(address _token, uint256 _amount) internal returns (uint256) {
+        require(commissionFee <= MAX_FEE_MULTIPLIER, "DCA: fee is too high");
+
+        if (commissionFee == 0) {
+            // If feeMultiplier is 0, exit function without making a transfer
+            return _amount;
+        }
+
+        uint256 fee = _amount * commissionFee / BASIS_POINTS;
+
+        TransferHelper.safeTransfer(_token, TREASURY, fee);
+        uint256 newAmount = _amount - fee;
+        return newAmount;
+    }
+
+    function openPosition(Position calldata _newPosition) external onlyOwner {
         _openPosition(_newPosition);
     }
 
-    function _openPosition(
-        Position memory _newPosition
-    ) internal {
-        require(_newPosition.beneficiary != address(0), 'DCA: beneficiary is the zero address');
-        require(_newPosition.executor != address(0), 'DCA: executor is the zero address');
-        require(_newPosition.singleSpendAmount > 0, 'DCA: spend amount is too small');
+    function _openPosition(Position memory _newPosition) internal {
+        require(_newPosition.beneficiary != address(0), "DCA: beneficiary is the zero address");
+        require(_newPosition.executor != address(0), "DCA: executor is the zero address");
+        require(_newPosition.singleSpendAmount > 0, "DCA: spend amount is too small");
 
         require(
             assetsWhitelist.checkIfWhitelisted(_newPosition.tokenToSpend, _newPosition.tokenToBuy),
-                'DCA: not whitelisted tokens are used'
+            "DCA: not whitelisted tokens are used"
         );
 
         TransferHelper.safeApprove(_newPosition.tokenToSpend, swapRouter, type(uint256).max);

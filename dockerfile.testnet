@@ -1,0 +1,15 @@
+# Use the latest foundry image
+FROM ghcr.io/foundry-rs/foundry
+
+WORKDIR /app
+COPY . .
+
+ARG mnemonic
+ARG RPC
+ENV mnemonic=$mnemonic
+ENV RPC=$RPC
+
+RUN forge build
+EXPOSE 8545/udp
+EXPOSE 8545/tcp
+ENTRYPOINT anvil -m "$mnemonic" --fork-url $RPC --no-cors --host 0.0.0.0
