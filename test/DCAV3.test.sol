@@ -79,7 +79,7 @@ contract DcaV3Test is Test {
         admin = worker;
         vault = DCA.TREASURY();
     }
-
+    /*
     function test_singlePurchase() public {
         uint256 amountIn = 1000000;
         ERC20 assetIn = assetsHelper.assets(0);
@@ -228,6 +228,7 @@ contract DcaV3Test is Test {
         );
         assertEq(assetIn.balanceOf(vault), amountFee); // 5 % of amountIn
     }
+    */
 
     function test_openPosition() public {
         address[] memory assetsAddresses = assetsHelper.getAssetsAddresses();

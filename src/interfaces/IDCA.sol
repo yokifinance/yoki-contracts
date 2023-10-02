@@ -3,6 +3,7 @@ pragma solidity ^0.8.10;
 
 import "../interfaces/IAssetsWhitelist.sol";
 import "@uniswap-periphery/contracts/interfaces/ISwapRouter.sol";
+import {MetaAggregationRouterV2} from "@kyberswap/MetaAggregationRouterV2.sol";
 
 interface IDCA {
     /**
@@ -45,9 +46,8 @@ interface IDCA {
         Position calldata initialPosition_
     ) external;
 
-    function executeMultihopPurchase(uint256 positionIndex, ISwapRouter.ExactInputParams memory params) external;
-
-    function executeSinglePurchase(uint256 positionIndex, ISwapRouter.ExactInputSingleParams memory params) external;
+    function executeKyberswap(uint256 positionIndex, MetaAggregationRouterV2.SwapExecutionParams memory params)
+        external;
 
     function allPositionsLength() external view returns (uint256);
 

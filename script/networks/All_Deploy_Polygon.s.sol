@@ -14,7 +14,7 @@ import {DCAV3Factory} from "../../src/factories/DCAV3Factory.sol";
 
 contract DeployAll is Script {
     function run() external {
-        address swapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+        address swapRouter = 0x6131B5fae19EA4f9D964eAc0408E4408b66337b5;
         address[] memory core_assets_to_spend = new address[](4);
         core_assets_to_spend[0] = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063; // DAI
         core_assets_to_spend[1] = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174; // USDC
