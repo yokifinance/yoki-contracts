@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {Script} from "forge-std/Script.sol";
 import "forge-std/console.sol";
-import {DCAV3} from "../src/strategies/DcaV3.sol";
+import {DCAV3} from "@DCA/strategies/DcaV3.sol";
 
 contract DeployDCAV3 is Script {
     function run() external returns (DCAV3) {

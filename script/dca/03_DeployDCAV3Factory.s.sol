@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 import {Script} from "forge-std/Script.sol";
 import "forge-std/console.sol";
-import {DCAV3Factory} from "../src/factories/DCAV3Factory.sol";
+import {DCAV3Factory} from "@DCA/factories/DCAV3Factory.sol";
 
 contract DeployDCAV3Factory is Script {
     function run(address swapRouter_, address assetsWhitelist_, address dcav3Implementation_)

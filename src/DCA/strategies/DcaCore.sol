@@ -2,8 +2,8 @@
 pragma solidity ^0.8.10;
 pragma abicoder v2;
 
-import "interfaces/IDCA.sol";
-import "interfaces/IAssetsWhitelist.sol";
+import "@DCA/interfaces/IDCA.sol";
+import "@DCA/interfaces/IAssetsWhitelist.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin-upgradeable/contracts/access/OwnableUpgradeable.sol";

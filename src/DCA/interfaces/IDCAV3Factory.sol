@@ -2,11 +2,10 @@
 pragma solidity ^0.8.10;
 pragma abicoder v2;
 
-import "interfaces/IDCA.sol";
+import "@DCA/interfaces/IDCA.sol";
 
 interface IDCAV3Factory {
-    function createDCA(
-        address newOwner,
-        IDCA.Position calldata initialPosition
-    ) external returns (address newDcaProxy);
+    function createDCA(address newOwner, IDCA.Position calldata initialPosition)
+        external
+        returns (address newDcaProxy);
 }

@@ -1,11 +1,11 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "interfaces/IDCA.sol";
 import "./helpers/AssetsHelper.sol";
-import "../src/strategies/DcaV3.sol";
-import "../src/factories/DCAV3Factory.sol";
-import "../src/dependencies/AssetsWhitelist.sol";
+import "@DCA/interfaces/IDCA.sol";
+import "@DCA/strategies/DcaV3.sol";
+import "@DCA/factories/DCAV3Factory.sol";
+import "@DCA/dependencies/AssetsWhitelist.sol";
 
 contract DCAFactoryTest is Test {
     AssetsHelper public assetsHelper;

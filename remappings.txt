@@ -1,7 +1,8 @@
 ds-test/=lib/forge-std/lib/ds-test/src/
 forge-std/=lib/forge-std/src/
 
-interfaces=src/DCA/interfaces
+@DCA=src/DCA
+@RPS=src/RPS
 @openzeppelin=lib/openzeppelin-contracts
 @openzeppelin-upgradeable=lib/openzeppelin-contracts-upgradeable
 
