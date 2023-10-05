@@ -6,7 +6,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IDCA} from "@DCA/interfaces/IDCA.sol";
 import {DCAV3} from "@DCA/strategies/DcaV3.sol";
 import "@DCA/dependencies/AssetsWhitelist.sol";
-import "./helpers/AssetsHelper.sol";
+import "../helpers/AssetsHelper.sol";
 
 // simulate 1 to 1 ratio at all times
 contract FakeSwapRouter is ISwapRouter {

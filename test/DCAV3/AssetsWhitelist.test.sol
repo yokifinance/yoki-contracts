@@ -1,7 +1,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "./helpers/AssetsHelper.sol";
+import "../helpers/AssetsHelper.sol";
 import "@DCA/dependencies/AssetsWhitelist.sol";
 
 contract AssetsWhitelistTest is Test {

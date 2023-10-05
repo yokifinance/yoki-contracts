@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// TODO: use open-zepplin helper instead
+// TODO: use open-zepplin helper or homebrew instead
 import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
@@ -35,11 +35,8 @@ contract RPSV1 is Initializable {
 
     // TODO: move to helpers
     function _checkIsERC20(address token) internal view returns (bool) {
-        try IERC20(token).totalSupply() returns (uint256) {
-            return true;
-        } catch (bytes memory) {
-            return false;
-        }
+        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSignature("totalSupply()"));
+        return success && (data.length > 0);
     }
 
     function initialize(
@@ -50,10 +47,10 @@ contract RPSV1 is Initializable {
         uint256 frequency_,
         uint8 fee_
     ) public initializer {
-        require(target != address(0), "RPS: Invalid target address");
-        require(tokenAddress != address(0), "RPS: Invalid token address");
-        require(_checkIsERC20(tokenAddress), "RPS: Provided token address is not ERC20");
-        require(subscriptionCost_ > 100, "RPS: Subscription cost should be at least 100");
+        require(target_ != address(0), "RPS: Invalid target address");
+        require(tokenAddress_ != address(0), "RPS: Invalid token address");
+        require(_checkIsERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
+        require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
         require(frequency_ > MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
         require(fee_ >= 0 && fee_ <= 10, "RPS: Fee must be more than 0 and less than 10");
 

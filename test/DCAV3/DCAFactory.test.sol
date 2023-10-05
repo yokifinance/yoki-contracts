@@ -1,7 +1,7 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "./helpers/AssetsHelper.sol";
+import "../helpers/AssetsHelper.sol";
 import "@DCA/interfaces/IDCA.sol";
 import "@DCA/strategies/DcaV3.sol";
 import "@DCA/factories/DCAV3Factory.sol";
