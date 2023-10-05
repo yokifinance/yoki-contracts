@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract RPSV1 is Initializable {
+    bool public isTerminated = false;
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
     uint256 public constant MIN_FREQUENCY = 60;
 
@@ -29,6 +30,7 @@ contract RPSV1 is Initializable {
         uint256 fee,
         uint256 nextExecutionTimestamp
     );
+    event unsubscribed(address contractAddress, address subscriber);
     event terminated(address contractAddress);
 
     // TODO: move to helpers
@@ -64,11 +66,13 @@ contract RPSV1 is Initializable {
     }
 
     function subscribe() public {
+        require(!isTerminated, "RPS: Contract was terminated");
         require(isSubscriber(msg.sender), "RPS: Already subscribed");
         lastExecutionTimestamp[msg.sender] = block.timestamp - frequency;
     }
 
     function canExecute(address subscriber) public view returns (bool) {
+        require(!isTerminated, "RPS: Contract was terminated");
         require(isSubscriber(subscriber), "RPS: Not a subscriber");
         uint256 lastSubscriberExecutionTimestamp = lastExecutionTimestamp[subscriber];
         require(block.timestamp + 24 > lastSubscriberExecutionTimestamp + frequency, "RPS: Too soon to execute");
@@ -112,10 +116,15 @@ contract RPSV1 is Initializable {
         return (lastExecutionTimestamp[subscriber] != 0);
     }
 
-    function terminate(address subscriber) public {
+    function unsubscribe(address subscriber) public {
         require(isSubscriber(subscriber), "RPS: Subscriber not found");
         require(msg.sender == target || msg.sender == subscriber, "RPS: Forbidden");
         delete lastExecutionTimestamp[subscriber];
         emit terminated(subscriber);
+    }
+
+    function terminate() public {
+        require(msg.sender == target, "RPS: Forbidden");
+        isTerminated = true;
     }
 }

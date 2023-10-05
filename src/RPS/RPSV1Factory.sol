@@ -30,6 +30,7 @@ contract RPSV1Factory is AccessControl {
         uint256 frequency,
         uint8 fee
     ) external returns (address newDcaProxy) {
+        require(hasRole("ADMIN", _msgSender()), "RPS: Forbidden");
         address proxy = Clones.clone(rpsImpl);
 
         RPSV1(proxy).initialize(merchantName, merchantAddress, tokenAddress, subscriptionCost, frequency, fee);
