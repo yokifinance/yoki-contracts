@@ -5,44 +5,38 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./RPSV1.sol";
 
-struct SubscriptionDetails {
-    address token;
-    uint256 amount;
-    uint256 frequency;
-}
-
-contract RPSV1Factory {
+contract RPSV1Factory is AccessControl {
     address public rpsImpl;
 
-    event SubscriptionCreated(
-        address indexed contractAddress, address indexed userWalletAddress, SubscriptionDetails subDetails
-    );
+    event SubscriptionCreated(address indexed contractAddress, string merchantName);
 
-    constructor(address rpsImp_) {
+    constructor(address rpsImp_, address[] memory admins) {
         require(rpsImp_ != address(0));
         rpsImpl = rpsImp_;
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender); // Super admin - can grant and revoke roles
+        for (uint256 i = 0; i < admins.length; i++) {
+            _setupRole("ADMIN", admins[i]);
+        }
     }
 
-    function createRPS(address token, uint256 amount, uint256 frequency) external returns (address newDcaProxy) {
-        address from = msg.sender;
-        address newRpsProxy = _deployRPS(from, token, amount, frequency);
-        TransferHelper.safeApprove(token, newRpsProxy, type(uint256).max);
-
-        emit SubscriptionCreated(
-            address(newRpsProxy), from, SubscriptionDetails({token: token, amount: amount, frequency: frequency})
-        );
-
-        return newRpsProxy;
-    }
-
-    function _deployRPS(address newOwner, address token, uint256 amount, uint256 frequency)
-        internal
-        returns (address)
-    {
+    function createRPS(
+        string calldata merchantName,
+        address merchantAddress,
+        address tokenAddress,
+        uint256 subscriptionCost,
+        uint256 frequency,
+        uint8 fee
+    ) external returns (address newDcaProxy) {
         address proxy = Clones.clone(rpsImpl);
 
-        RPSV1(proxy).initialize(newOwner, token, amount, frequency);
+        RPSV1(proxy).initialize(merchantName, merchantAddress, tokenAddress, subscriptionCost, frequency, fee);
+
+        TransferHelper.safeApprove(tokenAddress, proxy, type(uint256).max);
+
+        emit SubscriptionCreated(address(proxy), merchantName);
 
         return proxy;
     }
