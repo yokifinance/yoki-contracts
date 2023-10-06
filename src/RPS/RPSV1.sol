@@ -24,9 +24,9 @@ contract RPSV1 is Initializable {
     event executed(
         address contractAddress,
         address executor,
-        string marchantName,
+        string merchantName,
         address target,
-        uint256 subscriptionCost,
+        uint256 transfered,
         uint256 fee,
         uint256 nextExecutionTimestamp
     );
@@ -64,7 +64,7 @@ contract RPSV1 is Initializable {
 
     function subscribe() public {
         require(!isTerminated, "RPS: Contract was terminated");
-        require(isSubscriber(msg.sender), "RPS: Already subscribed");
+        require(!isSubscriber(msg.sender), "RPS: Already subscribed");
         lastExecutionTimestamp[msg.sender] = block.timestamp - frequency;
     }
 
@@ -81,21 +81,24 @@ contract RPSV1 is Initializable {
 
     function execute(address subscriber) public returns (uint256 nextExectuionTimestamp) {
         require(canExecute(subscriber), "RPS: Can't execute");
-        uint256 lastSubscriberExecutionTimestamp = lastExecutionTimestamp[subscriber];
+        uint256 subscriberLastExecutionTimestamp = getSubscriberLastExecutionTimestamp(subscriber);
 
         uint256 feeAmount = (subscriptionCost * fee) / 100;
         uint256 amountToTransfer = subscriptionCost - fee;
         TransferHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
         TransferHelper.safeTransferFrom(address(tokenAddress), subscriber, target, amountToTransfer);
 
-        uint256 nextExecutionTimestamp = lastSubscriberExecutionTimestamp + frequency;
+        uint256 currentExecutionTimestamp = subscriberLastExecutionTimestamp + frequency;
+        uint256 nextExecutionTimestamp = currentExecutionTimestamp + frequency;
         // if execute was not called in proper time-period (ex. previouse frequency was skipped) - reset timer
-        if (nextExecutionTimestamp + frequency < block.timestamp) {
+        if (currentExecutionTimestamp + frequency < block.timestamp) {
             lastExecutionTimestamp[subscriber] = block.timestamp;
+            nextExecutionTimestamp = block.timestamp + frequency;
         } else {
-            // otherwise - treat last execution as it was executed exactly after frequency stated amount of time
-            lastExecutionTimestamp[subscriber] = lastSubscriberExecutionTimestamp + frequency;
+            // otherwise - treat current execution as it was executed exactly after frequency passed
+            lastExecutionTimestamp[subscriber] = currentExecutionTimestamp;
         }
+
         emit executed(
             address(this),
             address(msg.sender),
@@ -113,15 +116,25 @@ contract RPSV1 is Initializable {
         return (lastExecutionTimestamp[subscriber] != 0);
     }
 
+    function getSubscriberLastExecutionTimestamp(address subscriber)
+        public
+        view
+        returns (uint256 subscriberLastExecutionTimestamp)
+    {
+        require(isSubscriber(subscriber), "RPS: Not a subscriber");
+        return lastExecutionTimestamp[subscriber];
+    }
+
     function unsubscribe(address subscriber) public {
         require(isSubscriber(subscriber), "RPS: Subscriber not found");
         require(msg.sender == target || msg.sender == subscriber, "RPS: Forbidden");
         delete lastExecutionTimestamp[subscriber];
-        emit terminated(subscriber);
+        emit unsubscribed(address(this), subscriber);
     }
 
     function terminate() public {
         require(msg.sender == target, "RPS: Forbidden");
         isTerminated = true;
+        emit terminated(address(this));
     }
 }
