@@ -57,8 +57,28 @@ contract RPSV1Test is Test {
     }
 
     function test_RPSV1_subscribe() public {
+        ERC20 asset = ERC20(assetAddress);
         address newSubscriber = makeAddr("newSubscriber");
         vm.startPrank(newSubscriber);
+        asset.approve(address(rps), subscriptionCost);
+        assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
+        rps.subscribe();
+        assertTrue(rps.isSubscriber(newSubscriber));
+        assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), mockTimestamp - frequency);
+    }
+
+    function test_RPSV1_subscribe_validations() public {
+        ERC20 asset = ERC20(assetAddress);
+        address newSubscriber = makeAddr("newSubscriber");
+        vm.startPrank(newSubscriber);
+        vm.expectRevert("RPS: Allowance is too low");
+        rps.subscribe();
+        asset.approve(address(rps), subscriptionCost);
+
+        vm.expectRevert("RPS: User balance is too low");
+        rps.subscribe();
+        assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
+
         rps.subscribe();
         assertTrue(rps.isSubscriber(newSubscriber));
         assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), mockTimestamp - frequency);
@@ -75,20 +95,27 @@ contract RPSV1Test is Test {
         vm.startPrank(newSubscriber);
         vm.expectRevert("RPS: Not a subscriber");
         rps.canExecute(newSubscriber);
+
+        // Provide assets to allow subscription
+        asset.approve(address(rps), subscriptionCost);
+        assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
         rps.subscribe();
+        // take away assets to test balances validations
+        asset.approve(address(rps), 0);
+        asset.transfer(address(makeAddr("trash_can")), subscriptionCost);
+
+        vm.expectRevert("RPS: Allowance is too low");
+        rps.canExecute(newSubscriber);
+        asset.approve(address(rps), subscriptionCost);
+
+        vm.expectRevert("RPS: User balance is too low");
+        rps.canExecute(newSubscriber);
+        assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
 
         vm.warp(mockTimestamp - frequency - 25);
         vm.expectRevert("RPS: Too soon to execute");
         rps.canExecute(newSubscriber);
         vm.warp(mockTimestamp);
-
-        vm.expectRevert("RPS: Allowance is too low");
-        rps.canExecute(newSubscriber);
-        asset.approve(address(rps), subscriberBalance);
-
-        vm.expectRevert("RPS: User balance is too low");
-        rps.canExecute(newSubscriber);
-        assetsHelper.dealTokens(asset, newSubscriber, subscriberBalance);
 
         assertTrue(rps.canExecute(newSubscriber));
     }

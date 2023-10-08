@@ -33,8 +33,8 @@ contract RPSV1 is IRPS, Initializable {
         require(tokenAddress_ != address(0), "RPS: Invalid token address");
         require(YokiHelper.isERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
         require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
-        require(frequency_ > MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
-        require(fee_ >= 0 && fee_ <= 10, "RPS: Fee must be more than 0 and less than 10");
+        require(frequency_ >= MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
+        require(fee_ >= 0 && fee_ <= 10, "RPS: Fee must be less than 10");
 
         merchantName = merchantName_;
         target = target_;
@@ -44,9 +44,16 @@ contract RPSV1 is IRPS, Initializable {
         fee = fee_;
     }
 
+    function checkAllowanceAndBalance(address subscriber) internal view {
+        IERC20 token = IERC20(tokenAddress);
+        require(token.allowance(subscriber, address(this)) >= subscriptionCost, "RPS: Allowance is too low");
+        require(token.balanceOf(subscriber) >= subscriptionCost, "RPS: User balance is too low");
+    }
+
     function subscribe() public {
         require(!isTerminated, "RPS: Contract was terminated");
         require(!isSubscriber(msg.sender), "RPS: Already subscribed");
+        checkAllowanceAndBalance(msg.sender);
         lastExecutionTimestamp[msg.sender] = block.timestamp - frequency;
     }
 
@@ -55,9 +62,7 @@ contract RPSV1 is IRPS, Initializable {
         require(isSubscriber(subscriber), "RPS: Not a subscriber");
         uint256 lastSubscriberExecutionTimestamp = lastExecutionTimestamp[subscriber];
         require(block.timestamp + 24 > lastSubscriberExecutionTimestamp + frequency, "RPS: Too soon to execute");
-        IERC20 token = IERC20(tokenAddress);
-        require(token.allowance(subscriber, address(this)) > subscriptionCost, "RPS: Allowance is too low");
-        require(token.balanceOf(subscriber) > subscriptionCost, "RPS: User balance is too low");
+        checkAllowanceAndBalance(subscriber);
         return true;
     }
 

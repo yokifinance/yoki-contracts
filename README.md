@@ -22,26 +22,32 @@ Rename `.env.example` to `.env` and setup env variables
 Run
 
 Production:
+`RPS`
+
+```
+export $(grep -v '^#' .env | xargs)
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/rps/All_Deploy.s.sol --broadcast --legacy --verify
+```
 
 `polygon`
 
 ```
 export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
 ```
 
 `optimism`
 
 ```
 export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Optimism.s.sol --broadcast --legacy --verify
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Optimism.s.sol --broadcast --legacy --verify
 ```
 
 `bsc`
 
 ```
 export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Binance.s.sol --broadcast --legacy --verify
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Binance.s.sol --broadcast --legacy --verify
 ```
 
 `note: deploy goes for single chain only. IF you need to deploy on multiple chains - dont forget to update "RPC" and "CHAIN_ID" values in env file before rerunning both commands`

@@ -58,7 +58,7 @@ contract RPSV1FactoryTest is Test {
         vm.expectRevert("RPS: Frequency should be at least 1 minute");
         factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, 59, fee);
 
-        vm.expectRevert("RPS: Fee must be more than 0 and less than 10");
+        vm.expectRevert("RPS: Fee must be less than 10");
         factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, frequency, 11);
     }
 

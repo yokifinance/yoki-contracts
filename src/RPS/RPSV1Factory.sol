@@ -17,7 +17,7 @@ contract RPSV1Factory is AccessControl {
         require(rpsImp_ != address(0));
         rpsImpl = rpsImp_;
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender); // Super admin - can grant and revoke roles
-        _setupRole("ADMIN", msg.sender); // Super admin - can grant and revoke roles
+        _setupRole("ADMIN", msg.sender);
         for (uint256 i = 0; i < admins.length; i++) {
             _setupRole("ADMIN", admins[i]);
         }
