@@ -6,7 +6,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../helpers/AssetsHelper.sol";
 
 contract RPSV1Test is Test {
-    event executed(
+    event Executed(
         address contractAddress,
         address executor,
         string merchantName,
@@ -15,8 +15,8 @@ contract RPSV1Test is Test {
         uint256 fee,
         uint256 nextExecutionTimestamp
     );
-    event unsubscribed(address contractAddress, address subscriber);
-    event terminated(address contractAddress);
+    event Unsubscribed(address contractAddress, address subscriber);
+    event Terminated(address contractAddress);
 
     RPSV1 rps;
     address merchantAddress;
@@ -96,7 +96,7 @@ contract RPSV1Test is Test {
     function test_RPSV1_unsubscribe() public {
         vm.startPrank(subscriber);
         vm.expectEmit(address(rps));
-        emit unsubscribed(address(rps), subscriber);
+        emit Unsubscribed(address(rps), subscriber);
         rps.unsubscribe(subscriber);
 
         vm.expectRevert("RPS: Not a subscriber");
@@ -107,7 +107,7 @@ contract RPSV1Test is Test {
     function test_RPSV1_unsubscribe_by_merchant() public {
         vm.startPrank(merchantAddress);
         vm.expectEmit(address(rps));
-        emit unsubscribed(address(rps), subscriber);
+        emit Unsubscribed(address(rps), subscriber);
         rps.unsubscribe(subscriber);
 
         vm.expectRevert("RPS: Not a subscriber");
@@ -136,7 +136,7 @@ contract RPSV1Test is Test {
 
         vm.prank(owner);
         vm.expectEmit(address(rps));
-        emit executed(
+        emit Executed(
             address(rps),
             owner,
             merchantName,
@@ -161,7 +161,7 @@ contract RPSV1Test is Test {
     function test_RPSV1_terminate() public {
         vm.prank(merchantAddress);
         vm.expectEmit(address(rps));
-        emit terminated(address(rps));
+        emit Terminated(address(rps));
         rps.terminate();
 
         vm.expectRevert("RPS: Contract was terminated");

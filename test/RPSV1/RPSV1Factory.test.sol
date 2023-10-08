@@ -13,6 +13,8 @@ contract RPSV1FactoryTest is Test {
     address public owner;
     address[] public admins;
 
+    event RPSCreated(address indexed contractAddress, string merchantName);
+
     function setUp() public {
         owner = makeAddr("owner");
         address admin = makeAddr("admin");
@@ -62,12 +64,12 @@ contract RPSV1FactoryTest is Test {
 
     function test_RPSV1Factory_createRPS() public {
         string memory merchantName = "Merchant";
-        address target = owner;
+        address merchantAddress = owner;
         address tokenAddress = assetAddress;
         uint256 subscriptionCost = 100;
         uint256 frequency = 36000;
         uint8 fee = 3;
         vm.prank(owner);
-        factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, frequency, fee);
+        factory.createRPS(merchantName, merchantAddress, tokenAddress, subscriptionCost, frequency, fee);
     }
 }

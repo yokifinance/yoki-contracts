@@ -11,7 +11,7 @@ import "./RPSV1.sol";
 contract RPSV1Factory is AccessControl {
     address public rpsImpl;
 
-    event SubscriptionCreated(address indexed contractAddress, string merchantName);
+    event RPSCreated(address indexed contractAddress, string merchantName);
 
     constructor(address rpsImp_, address[] memory admins) {
         require(rpsImp_ != address(0));
@@ -30,15 +30,13 @@ contract RPSV1Factory is AccessControl {
         uint256 subscriptionCost,
         uint256 frequency,
         uint8 fee
-    ) external returns (address newDcaProxy) {
+    ) external returns (address newRpsProxy) {
         require(hasRole("ADMIN", _msgSender()), "RPS: Forbidden");
         address proxy = Clones.clone(rpsImpl);
 
         RPSV1(proxy).initialize(merchantName, merchantAddress, tokenAddress, subscriptionCost, frequency, fee);
 
-        TransferHelper.safeApprove(tokenAddress, proxy, type(uint256).max);
-
-        emit SubscriptionCreated(address(proxy), merchantName);
+        emit RPSCreated(address(proxy), merchantName);
 
         return proxy;
     }

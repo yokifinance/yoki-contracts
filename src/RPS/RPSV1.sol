@@ -6,8 +6,9 @@ import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./IRPS.sol";
 
-contract RPSV1 is Initializable {
+contract RPSV1 is IRPS, Initializable {
     bool public isTerminated = false;
     address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
     uint256 public constant MIN_FREQUENCY = 60;
@@ -20,18 +21,6 @@ contract RPSV1 is Initializable {
     uint256 public frequency = MIN_FREQUENCY; // how ofter to substract subscription payment in unix timestamp
 
     mapping(address => uint256) private lastExecutionTimestamp;
-
-    event executed(
-        address contractAddress,
-        address executor,
-        string merchantName,
-        address target,
-        uint256 transfered,
-        uint256 fee,
-        uint256 nextExecutionTimestamp
-    );
-    event unsubscribed(address contractAddress, address subscriber);
-    event terminated(address contractAddress);
 
     // TODO: move to helpers
     function _checkIsERC20(address token) internal view returns (bool) {
@@ -99,7 +88,7 @@ contract RPSV1 is Initializable {
             lastExecutionTimestamp[subscriber] = currentExecutionTimestamp;
         }
 
-        emit executed(
+        emit Executed(
             address(this),
             address(msg.sender),
             merchantName,
@@ -125,16 +114,20 @@ contract RPSV1 is Initializable {
         return lastExecutionTimestamp[subscriber];
     }
 
+    function unsubscribe() public {
+        unsubscribe(msg.sender);
+    }
+
     function unsubscribe(address subscriber) public {
         require(isSubscriber(subscriber), "RPS: Subscriber not found");
         require(msg.sender == target || msg.sender == subscriber, "RPS: Forbidden");
         delete lastExecutionTimestamp[subscriber];
-        emit unsubscribed(address(this), subscriber);
+        emit Unsubscribed(address(this), subscriber);
     }
 
     function terminate() public {
         require(msg.sender == target, "RPS: Forbidden");
         isTerminated = true;
-        emit terminated(address(this));
+        emit Terminated(address(this));
     }
 }
