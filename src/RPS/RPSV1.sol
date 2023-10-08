@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-// TODO: use open-zepplin helper or homebrew instead
-import "@uniswap-periphery/contracts/libraries/TransferHelper.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IRPS.sol";
+import "../YokiHelper.sol";
 
 contract RPSV1 is IRPS, Initializable {
     bool public isTerminated = false;
@@ -22,12 +21,6 @@ contract RPSV1 is IRPS, Initializable {
 
     mapping(address => uint256) private lastExecutionTimestamp;
 
-    // TODO: move to helpers
-    function _checkIsERC20(address token) internal view returns (bool) {
-        (bool success, bytes memory data) = address(token).staticcall(abi.encodeWithSignature("totalSupply()"));
-        return success && (data.length > 0);
-    }
-
     function initialize(
         string memory merchantName_,
         address target_,
@@ -38,7 +31,7 @@ contract RPSV1 is IRPS, Initializable {
     ) public initializer {
         require(target_ != address(0), "RPS: Invalid target address");
         require(tokenAddress_ != address(0), "RPS: Invalid token address");
-        require(_checkIsERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
+        require(YokiHelper.isERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
         require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
         require(frequency_ > MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
         require(fee_ >= 0 && fee_ <= 10, "RPS: Fee must be more than 0 and less than 10");
@@ -74,8 +67,8 @@ contract RPSV1 is IRPS, Initializable {
 
         uint256 feeAmount = (subscriptionCost * fee) / 100;
         uint256 amountToTransfer = subscriptionCost - fee;
-        TransferHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
-        TransferHelper.safeTransferFrom(address(tokenAddress), subscriber, target, amountToTransfer);
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, target, amountToTransfer);
 
         uint256 currentExecutionTimestamp = subscriberLastExecutionTimestamp + frequency;
         uint256 nextExecutionTimestamp = currentExecutionTimestamp + frequency;
