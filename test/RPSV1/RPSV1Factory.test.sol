@@ -31,7 +31,7 @@ contract RPSV1FactoryTest is Test {
         address trickster = makeAddr("trickster");
         vm.prank(trickster);
         vm.expectRevert("RPS: Forbidden");
-        factory.createRPS("Trickster", trickster, assetAddress, 100, 60, 10);
+        factory.createRPS("Trickster", trickster, assetAddress, 100, 60, 100);
     }
 
     function test_RPSV1Factory_createRPS_validations() public {
@@ -58,8 +58,8 @@ contract RPSV1FactoryTest is Test {
         vm.expectRevert("RPS: Frequency should be at least 1 minute");
         factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, 59, fee);
 
-        vm.expectRevert("RPS: Fee must be less than 10");
-        factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, frequency, 11);
+        vm.expectRevert("RPS: Fee must be less than 100 (10%)");
+        factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, frequency, 101);
     }
 
     function test_RPSV1Factory_createRPS() public {

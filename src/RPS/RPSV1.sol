@@ -13,7 +13,7 @@ contract RPSV1 is IRPS, Initializable {
     uint256 public constant MIN_FREQUENCY = 60;
 
     string public merchantName;
-    uint8 public fee = 3; // commission %
+    uint8 public fee = 30; // commission in tenths of percent, fee = 30 = 3%
     address public target; // merchant address
     address public tokenAddress; // ERC20 token used to pay for subscription
     uint256 public subscriptionCost; // amount of "token"s to withdraw from subscriber
@@ -34,7 +34,7 @@ contract RPSV1 is IRPS, Initializable {
         require(YokiHelper.isERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
         require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
         require(frequency_ >= MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
-        require(fee_ >= 0 && fee_ <= 10, "RPS: Fee must be less than 10");
+        require(fee_ >= 0 && fee_ <= 100, "RPS: Fee must be less than 100 (10%)");
 
         merchantName = merchantName_;
         target = target_;
@@ -70,8 +70,8 @@ contract RPSV1 is IRPS, Initializable {
         require(canExecute(subscriber), "RPS: Can't execute");
         uint256 subscriberLastExecutionTimestamp = getSubscriberLastExecutionTimestamp(subscriber);
 
-        uint256 feeAmount = (subscriptionCost * fee) / 100;
-        uint256 amountToTransfer = subscriptionCost - fee;
+        uint256 feeAmount = (subscriptionCost * fee) / 1000;
+        uint256 amountToTransfer = subscriptionCost - feeAmount;
         YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
         YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, target, amountToTransfer);
 

@@ -24,7 +24,7 @@ contract RPSV1Test is Test {
     uint256 subscriptionCost = 100;
     uint256 frequency = 36000;
     string public merchantName = "Merchant";
-    uint8 fee = 3;
+    uint8 fee = 30; // 3%
 
     address subscriber;
     uint256 subscriberBalance = 1000;
@@ -158,8 +158,10 @@ contract RPSV1Test is Test {
         assertEq(token.balanceOf(treasury), 0);
         assertEq(token.balanceOf(merchantAddress), 0);
 
-        uint256 expectedTransfered = subscriptionCost * (100 - fee) / 100;
-        uint256 expectedFee = subscriptionCost * fee / 100;
+        // fee = 30 (3%) | expectedTransfered = 97% of 100 -> 97
+        uint256 expectedTransfered = subscriptionCost * (1000 - fee) / 1000;
+        // expectedFee = 3% of 100 -> 3
+        uint256 expectedFee = subscriptionCost * fee / 1000;
 
         vm.prank(owner);
         vm.expectEmit(address(rps));
@@ -176,6 +178,7 @@ contract RPSV1Test is Test {
 
         assertEq(token.balanceOf(treasury), expectedFee);
         assertEq(token.balanceOf(merchantAddress), expectedTransfered);
+        assertEq(token.balanceOf(merchantAddress) + token.balanceOf(treasury), subscriptionCost);
     }
 
     function test_RPSV1_execute_after_first_one_was_missed() public {
