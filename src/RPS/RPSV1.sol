@@ -13,8 +13,9 @@ contract RPSV1 is IRPS, Initializable {
     uint256 public constant MIN_FREQUENCY = 60;
 
     string public merchantName;
-    uint8 public fee = 30; // commission in tenths of percent, fee = 30 = 3%
-    address public target; // merchant address
+    // processingFee = 30 is 3%
+    uint8 public processingFee = 30; // commission in tenths of percent paid by service provider
+    address public settlementAddress; // service provider address to receive subscriber payment
     address public tokenAddress; // ERC20 token used to pay for subscription
     uint256 public subscriptionCost; // amount of "token"s to withdraw from subscriber
     uint256 public frequency = MIN_FREQUENCY; // how ofter to substract subscription payment in unix timestamp
@@ -23,25 +24,25 @@ contract RPSV1 is IRPS, Initializable {
 
     function initialize(
         string memory merchantName_,
-        address target_,
+        address settlementAddress_,
         address tokenAddress_,
         uint256 subscriptionCost_,
         uint256 frequency_,
-        uint8 fee_
+        uint8 processingFee_
     ) public initializer {
-        require(target_ != address(0), "RPS: Invalid target address");
+        require(settlementAddress_ != address(0), "RPS: Invalid settlement address");
         require(tokenAddress_ != address(0), "RPS: Invalid token address");
         require(YokiHelper.isERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
         require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
         require(frequency_ >= MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
-        require(fee_ >= 0 && fee_ <= 100, "RPS: Fee must be less than 100 (10%)");
+        require(processingFee_ >= 0 && processingFee_ <= 100, "RPS: Processing fee must be less than 100 (10%)");
 
         merchantName = merchantName_;
-        target = target_;
+        settlementAddress = settlementAddress_;
         tokenAddress = tokenAddress_;
         subscriptionCost = subscriptionCost_;
         frequency = frequency_;
-        fee = fee_;
+        processingFee = processingFee_;
     }
 
     function checkAllowanceAndBalance(address subscriber) internal view {
@@ -70,10 +71,10 @@ contract RPSV1 is IRPS, Initializable {
         require(canExecute(subscriber), "RPS: Can't execute");
         uint256 subscriberLastExecutionTimestamp = getSubscriberLastExecutionTimestamp(subscriber);
 
-        uint256 feeAmount = (subscriptionCost * fee) / 1000;
+        uint256 feeAmount = (subscriptionCost * processingFee) / 1000;
         uint256 amountToTransfer = subscriptionCost - feeAmount;
         YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
-        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, target, amountToTransfer);
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, settlementAddress, amountToTransfer);
 
         uint256 currentExecutionTimestamp = subscriberLastExecutionTimestamp + frequency;
         uint256 nextExecutionTimestamp = currentExecutionTimestamp + frequency;
@@ -90,7 +91,7 @@ contract RPSV1 is IRPS, Initializable {
             address(this),
             address(msg.sender),
             merchantName,
-            target,
+            settlementAddress,
             amountToTransfer,
             feeAmount,
             nextExecutionTimestamp
@@ -118,13 +119,13 @@ contract RPSV1 is IRPS, Initializable {
 
     function unsubscribe(address subscriber) public {
         require(isSubscriber(subscriber), "RPS: Subscriber not found");
-        require(msg.sender == target || msg.sender == subscriber, "RPS: Forbidden");
+        require(msg.sender == settlementAddress || msg.sender == subscriber, "RPS: Forbidden");
         delete lastExecutionTimestamp[subscriber];
         emit Unsubscribed(address(this), subscriber);
     }
 
     function terminate() public {
-        require(msg.sender == target, "RPS: Forbidden");
+        require(msg.sender == settlementAddress, "RPS: Forbidden");
         isTerminated = true;
         emit Terminated(address(this));
     }

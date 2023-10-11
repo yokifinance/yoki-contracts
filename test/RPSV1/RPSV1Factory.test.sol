@@ -43,7 +43,7 @@ contract RPSV1FactoryTest is Test {
         uint8 fee = 3;
         vm.startPrank(owner);
 
-        vm.expectRevert("RPS: Invalid target address");
+        vm.expectRevert("RPS: Invalid settlement address");
         factory.createRPS(merchantName, address(0), tokenAddress, subscriptionCost, frequency, fee);
 
         vm.expectRevert("RPS: Invalid token address");
@@ -58,7 +58,7 @@ contract RPSV1FactoryTest is Test {
         vm.expectRevert("RPS: Frequency should be at least 1 minute");
         factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, 59, fee);
 
-        vm.expectRevert("RPS: Fee must be less than 100 (10%)");
+        vm.expectRevert("RPS: Processing fee must be less than 100 (10%)");
         factory.createRPS(merchantName, target, tokenAddress, subscriptionCost, frequency, 101);
     }
 
