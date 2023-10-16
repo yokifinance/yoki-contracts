@@ -55,7 +55,11 @@ contract RPSV1 is IRPS, Initializable {
         require(!isTerminated, "RPS: Contract was terminated");
         require(!isSubscriber(msg.sender), "RPS: Already subscribed");
         checkAllowanceAndBalance(msg.sender);
-        lastExecutionTimestamp[msg.sender] = block.timestamp - frequency;
+        uint256 currentTimestamp = block.timestamp;
+        lastExecutionTimestamp[msg.sender] = currentTimestamp - frequency;
+        emit Subscribed(
+            address(this), merchantName, address(msg.sender), lastExecutionTimestamp[msg.sender], currentTimestamp
+        );
     }
 
     function canExecute(address subscriber) public view returns (bool) {

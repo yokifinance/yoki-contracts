@@ -10,9 +10,16 @@ contract RPSV1Test is Test {
         address contractAddress,
         address executor,
         string merchantName,
-        address target,
+        address settlementAddress,
         uint256 transfered,
         uint256 fee,
+        uint256 nextExecutionTimestamp
+    );
+    event Subscribed(
+        address contractAddress,
+        string merchantName,
+        address subscriber,
+        uint256 lastExecutionTimestamp,
         uint256 nextExecutionTimestamp
     );
     event Unsubscribed(address contractAddress, address subscriber);
@@ -60,9 +67,14 @@ contract RPSV1Test is Test {
         ERC20 asset = ERC20(assetAddress);
         address newSubscriber = makeAddr("newSubscriber");
         vm.startPrank(newSubscriber);
+
         asset.approve(address(rps), subscriptionCost);
         assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
+
+        vm.expectEmit(address(rps));
+        emit Subscribed(address(rps), merchantName, newSubscriber, mockTimestamp - frequency, mockTimestamp);
         rps.subscribe();
+
         assertTrue(rps.isSubscriber(newSubscriber));
         assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), mockTimestamp - frequency);
     }
