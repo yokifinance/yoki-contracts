@@ -9,6 +9,7 @@ contract RPSV1Test is Test {
     event Executed(
         address contractAddress,
         address executor,
+        address subscriber,
         string merchantName,
         address settlementAddress,
         uint256 transfered,
@@ -180,6 +181,7 @@ contract RPSV1Test is Test {
         emit Executed(
             address(rps),
             owner,
+            subscriber,
             merchantName,
             merchantAddress,
             expectedTransfered,

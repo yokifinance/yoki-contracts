@@ -94,6 +94,7 @@ contract RPSV1 is IRPS, Initializable {
         emit Executed(
             address(this),
             address(msg.sender),
+            subscriber,
             merchantName,
             settlementAddress,
             amountToTransfer,

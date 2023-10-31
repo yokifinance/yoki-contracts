@@ -7,6 +7,7 @@ interface IRPS {
     event Executed(
         address contractAddress,
         address executor,
+        address subscriber,
         string merchantName,
         address settlementAddress,
         uint256 transfered,
