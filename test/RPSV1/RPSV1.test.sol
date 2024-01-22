@@ -18,8 +18,11 @@ contract RPSV1Test is Test {
     );
     event Subscribed(
         address contractAddress,
-        string merchantName,
         address subscriber,
+        address settlementAddress,
+        string merchantName,
+        uint256 transfered,
+        uint256 fee,
         uint256 lastExecutionTimestamp,
         uint256 nextExecutionTimestamp
     );
@@ -38,16 +41,17 @@ contract RPSV1Test is Test {
     uint256 subscriberBalance = 1000;
     AssetsHelper assetsHelper;
 
-    address public owner;
+    address owner;
     // Sunday, 9 September 2001 01:46:40
-    uint256 mockTimestamp = 1000000000;
+    uint256 subscribedAt = 1000000000;
 
     function setUp() public {
-        vm.warp(mockTimestamp);
+        vm.warp(subscribedAt);
         owner = makeAddr("owner");
         merchantAddress = makeAddr("merchant");
         assetsHelper = new AssetsHelper(1);
         assetAddress = assetsHelper.getAssetsAddresses()[0];
+        ERC20 asset = ERC20(assetAddress);
 
         subscriber = makeAddr("subscriber");
         assetsHelper.dealTokens(assetsHelper.assets(0), subscriber, subscriberBalance);
@@ -55,29 +59,70 @@ contract RPSV1Test is Test {
         rps = new RPSV1();
 
         vm.prank(subscriber);
-        ERC20(assetAddress).approve(address(rps), subscriberBalance);
+        asset.approve(address(rps), subscriberBalance);
 
         vm.prank(owner);
         rps.initialize(merchantName, merchantAddress, assetAddress, subscriptionCost, frequency, fee);
 
         vm.prank(subscriber);
         rps.subscribe();
+
+        // ______ rps.subscribe took all funds and approvals back to zero ______
+
+        // __reset subscriber__
+        // we want to make our subscriber default again
+        vm.prank(subscriber);
+        asset.approve(address(rps), subscriberBalance);
+        // deal tokens to match wallet balance to subscriberBalance variable
+        vm.prank(owner);
+        assetsHelper.dealTokens(assetsHelper.assets(0), subscriber, subscriberBalance - asset.balanceOf(subscriber));
+
+        // __reset treasury and owner__
+        address treasury = rps.TREASURY();
+
+        vm.prank(treasury);
+        asset.transfer(address(makeAddr("trash_can")), 3);
+        vm.prank(merchantAddress);
+        asset.transfer(address(makeAddr("trash_can")), 97);
+
+        // TODO: some forge shenanigans prevents this one from working (despite balanceOf returning correctly 3)
+        // asset.transfer(address(makeAddr("trash_can")), asset.balanceOf(treasury))
     }
 
     function test_RPSV1_subscribe() public {
         ERC20 asset = ERC20(assetAddress);
         address newSubscriber = makeAddr("newSubscriber");
+        address treasury = rps.TREASURY();
+        uint256 expectedTransfered = subscriptionCost * (1000 - fee) / 1000;
+        uint256 expectedFee = subscriptionCost * fee / 1000;
+
         vm.startPrank(newSubscriber);
 
         asset.approve(address(rps), subscriptionCost);
         assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
 
         vm.expectEmit(address(rps));
-        emit Subscribed(address(rps), merchantName, newSubscriber, mockTimestamp - frequency, mockTimestamp);
+        emit Subscribed(
+            address(rps),
+            address(newSubscriber),
+            rps.settlementAddress(),
+            merchantName,
+            expectedTransfered,
+            expectedFee,
+            subscribedAt,
+            subscribedAt + frequency
+        );
         rps.subscribe();
 
+        // validate subscription success
         assertTrue(rps.isSubscriber(newSubscriber));
-        assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), mockTimestamp - frequency);
+        assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), subscribedAt);
+
+        // validate execution success
+        assertEq(asset.balanceOf(treasury), expectedFee);
+        assertEq(asset.balanceOf(merchantAddress), expectedTransfered);
+        assertEq(asset.balanceOf(merchantAddress) + asset.balanceOf(treasury), subscriptionCost);
+        assertEq(asset.balanceOf(newSubscriber), 0);
     }
 
     function test_RPSV1_subscribe_validations() public {
@@ -94,11 +139,17 @@ contract RPSV1Test is Test {
 
         rps.subscribe();
         assertTrue(rps.isSubscriber(newSubscriber));
-        assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), mockTimestamp - frequency);
+        assertEq(rps.getSubscriberLastExecutionTimestamp(newSubscriber), subscribedAt);
     }
 
     function test_RPSV1_canExecute() public {
+        // fresh subscription
         vm.prank(makeAddr("random_user"));
+
+        vm.expectRevert("RPS: Too soon to execute");
+        rps.canExecute(subscriber);
+
+        vm.warp(subscribedAt + frequency);
         assertTrue(rps.canExecute(subscriber));
     }
 
@@ -115,7 +166,11 @@ contract RPSV1Test is Test {
         rps.subscribe();
         // take away assets to test balances validations
         asset.approve(address(rps), 0);
-        asset.transfer(address(makeAddr("trash_can")), subscriptionCost);
+        asset.transfer(address(makeAddr("trash_can")), asset.balanceOf(newSubscriber));
+
+        vm.expectRevert("RPS: Too soon to execute");
+        rps.canExecute(newSubscriber);
+        vm.warp(subscribedAt + frequency);
 
         vm.expectRevert("RPS: Allowance is too low");
         rps.canExecute(newSubscriber);
@@ -124,11 +179,6 @@ contract RPSV1Test is Test {
         vm.expectRevert("RPS: User balance is too low");
         rps.canExecute(newSubscriber);
         assetsHelper.dealTokens(asset, newSubscriber, subscriptionCost);
-
-        vm.warp(mockTimestamp - frequency - 25);
-        vm.expectRevert("RPS: Too soon to execute");
-        rps.canExecute(newSubscriber);
-        vm.warp(mockTimestamp);
 
         assertTrue(rps.canExecute(newSubscriber));
     }
@@ -167,14 +217,19 @@ contract RPSV1Test is Test {
 
     function test_RPSV1_execute() public {
         address treasury = rps.TREASURY();
-        ERC20 token = ERC20(assetAddress);
-        assertEq(token.balanceOf(treasury), 0);
-        assertEq(token.balanceOf(merchantAddress), 0);
+        ERC20 asset = ERC20(assetAddress);
+        assertEq(asset.balanceOf(treasury), 0);
+        assertEq(asset.balanceOf(merchantAddress), 0);
+
+        // warp to next execution timestamp
+        vm.warp(subscribedAt + frequency);
 
         // fee = 30 (3%) | expectedTransfered = 97% of 100 -> 97
         uint256 expectedTransfered = subscriptionCost * (1000 - fee) / 1000;
         // expectedFee = 3% of 100 -> 3
         uint256 expectedFee = subscriptionCost * fee / 1000;
+        // when subscribed + when allowed to be executed + delay after execution
+        uint256 expectedNextExecutionTimestamp = subscribedAt + frequency + frequency;
 
         vm.prank(owner);
         vm.expectEmit(address(rps));
@@ -186,17 +241,18 @@ contract RPSV1Test is Test {
             merchantAddress,
             expectedTransfered,
             expectedFee,
-            mockTimestamp + frequency
+            expectedNextExecutionTimestamp
         );
-        assertEq(rps.execute(subscriber), mockTimestamp + frequency);
+        assertEq(rps.execute(subscriber), expectedNextExecutionTimestamp);
 
-        assertEq(token.balanceOf(treasury), expectedFee);
-        assertEq(token.balanceOf(merchantAddress), expectedTransfered);
-        assertEq(token.balanceOf(merchantAddress) + token.balanceOf(treasury), subscriptionCost);
+        assertEq(asset.balanceOf(treasury), expectedFee);
+        assertEq(asset.balanceOf(merchantAddress), expectedTransfered);
+        assertEq(asset.balanceOf(merchantAddress) + asset.balanceOf(treasury), subscriptionCost);
+        assertEq(asset.balanceOf(subscriber), subscriberBalance - subscriptionCost);
     }
 
     function test_RPSV1_execute_after_first_one_was_missed() public {
-        uint256 futureTimestamp = frequency * 2 + mockTimestamp + 100; // simulate that we skipped one payment
+        uint256 futureTimestamp = frequency * 2 + subscribedAt + 100; // simulate that we skipped one payment
         vm.warp(futureTimestamp);
         assertEq(rps.execute(subscriber), futureTimestamp + frequency);
         assertEq(rps.getSubscriberLastExecutionTimestamp(subscriber), futureTimestamp);
