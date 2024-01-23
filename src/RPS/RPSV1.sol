@@ -51,17 +51,6 @@ contract RPSV1 is IRPS, Initializable {
         require(token.balanceOf(subscriber) >= subscriptionCost, "RPS: User balance is too low");
     }
 
-    function subscribe() public {
-        require(!isTerminated, "RPS: Contract was terminated");
-        require(!isSubscriber(msg.sender), "RPS: Already subscribed");
-        checkAllowanceAndBalance(msg.sender);
-        uint256 currentTimestamp = block.timestamp;
-        lastExecutionTimestamp[msg.sender] = currentTimestamp - frequency;
-        emit Subscribed(
-            address(this), merchantName, address(msg.sender), lastExecutionTimestamp[msg.sender], currentTimestamp
-        );
-    }
-
     function canExecute(address subscriber) public view returns (bool) {
         require(!isTerminated, "RPS: Contract was terminated");
         require(isSubscriber(subscriber), "RPS: Not a subscriber");
@@ -71,25 +60,56 @@ contract RPSV1 is IRPS, Initializable {
         return true;
     }
 
-    function execute(address subscriber) public returns (uint256 nextExectuionTimestamp) {
-        require(canExecute(subscriber), "RPS: Can't execute");
-        uint256 subscriberLastExecutionTimestamp = getSubscriberLastExecutionTimestamp(subscriber);
+    function subscribe() public {
+        address subscriber = msg.sender;
+        require(!isTerminated, "RPS: Contract was terminated");
+        require(!isSubscriber(subscriber), "RPS: Already subscribed");
+        checkAllowanceAndBalance(subscriber);
+        uint256 currentTimestamp = block.timestamp;
+        lastExecutionTimestamp[subscriber] = currentTimestamp - frequency;
 
+        (uint256 nextExecutionTimestamp, uint256 fee, uint256 transfered) = processPayment(subscriber);
+        emit Subscribed(
+            address(this),
+            address(subscriber),
+            settlementAddress,
+            merchantName,
+            transfered,
+            fee,
+            currentTimestamp,
+            nextExecutionTimestamp
+        );
+    }
+
+    function processPayment(address subscriber)
+        internal
+        returns (uint256 nextExecutionTimestamp, uint256 fee, uint256 transfered)
+    {
+        uint256 subscriberLastExecutionTimestamp = getSubscriberLastExecutionTimestamp(subscriber);
         uint256 feeAmount = (subscriptionCost * processingFee) / 1000;
         uint256 amountToTransfer = subscriptionCost - feeAmount;
+
         YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
         YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, settlementAddress, amountToTransfer);
 
         uint256 currentExecutionTimestamp = subscriberLastExecutionTimestamp + frequency;
-        uint256 nextExecutionTimestamp = currentExecutionTimestamp + frequency;
+        uint256 nextTimestamp = currentExecutionTimestamp + frequency;
         // if execute was not called in proper time-period (ex. previouse frequency was skipped) - reset timer
         if (currentExecutionTimestamp + frequency < block.timestamp) {
             lastExecutionTimestamp[subscriber] = block.timestamp;
-            nextExecutionTimestamp = block.timestamp + frequency;
+            nextTimestamp = block.timestamp + frequency;
         } else {
             // otherwise - treat current execution as it was executed exactly after frequency passed
             lastExecutionTimestamp[subscriber] = currentExecutionTimestamp;
         }
+
+        return (nextTimestamp, feeAmount, amountToTransfer);
+    }
+
+    function execute(address subscriber) public returns (uint256 nextExectuionTimestamp) {
+        require(canExecute(subscriber), "RPS: Can't execute");
+
+        (uint256 nextExecutionTimestamp, uint256 fee, uint256 transfered) = processPayment(subscriber);
 
         emit Executed(
             address(this),
@@ -97,8 +117,8 @@ contract RPSV1 is IRPS, Initializable {
             subscriber,
             merchantName,
             settlementAddress,
-            amountToTransfer,
-            feeAmount,
+            transfered,
+            fee,
             nextExecutionTimestamp
         );
 

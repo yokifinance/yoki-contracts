@@ -16,8 +16,11 @@ interface IRPS {
     );
     event Subscribed(
         address contractAddress,
-        string merchantName,
         address subscriber,
+        address settlementAddress,
+        string merchantName,
+        uint256 transfered,
+        uint256 fee,
         uint256 lastExecutionTimestamp,
         uint256 nextExecutionTimestamp
     );
