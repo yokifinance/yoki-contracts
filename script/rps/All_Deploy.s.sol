@@ -13,9 +13,20 @@ contract DeployAll is Script {
         vm.startBroadcast(deployerPrivateKey);
         console.log("Deploying RPSV1 implementation for cloning");
         RPSV1 rpsImp = new RPSV1();
-        console.log("RPSV1 deployed: ", address(rpsImp));
-        address[] memory admins = new address[](1);
-        admins[0] = vm.envAddress("address");
+        console.log("RPSV1 impl address: ", address(rpsImp));
+
+        uint256 adminCount = vm.envUint("admin_count");
+        console.log("Setting admins.. ", adminCount, " specified");
+
+        address[] memory admins = new address[](adminCount);
+        for (uint256 i = 0; i < adminCount; i++) {
+            string memory key = string(
+                abi.encodePacked("admin_address", vm.toString(i))
+            );
+
+            admins[i] = vm.envAddress(key);
+            console.log("Admin ", admins[i], " found");
+        }
 
         console.log("Deploying RPSV1Factory");
         RPSV1Factory factory = new RPSV1Factory(address(rpsImp), admins);
