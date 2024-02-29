@@ -31,6 +31,7 @@ forge script --rpc-url $RPC --chain-id $CHAIN_ID script/rps/All_Deploy.s.sol --b
 
 `DCA polygon`
 
+
 ```
 export $(grep -v '^#' .env | xargs)
 forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
