@@ -29,21 +29,21 @@ export $(grep -v '^#' .env | xargs)
 forge script --rpc-url $RPC --chain-id $CHAIN_ID script/rps/All_Deploy.s.sol --broadcast --legacy --verify
 ```
 
-`polygon`
+`DCA polygon`
 
 ```
 export $(grep -v '^#' .env | xargs)
 forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
 ```
 
-`optimism`
+`DCA optimism`
 
 ```
 export $(grep -v '^#' .env | xargs)
 forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Optimism.s.sol --broadcast --legacy --verify
 ```
 
-`bsc`
+`DCA bsc`
 
 ```
 export $(grep -v '^#' .env | xargs)
@@ -66,8 +66,24 @@ Setup apikeys and urls in `foundry.toml` and constructor args in txt file (see e
 
 Verify target contract using following command:
 
+## RPSV1
+
+Example for manual verification on optimism
+
 ```
-forge verify-contract --chain polygon 0x7a5B8E6c19ceA36Abc3b8f2C13962344207feA6b --watch --constructor-args-path factory-constructor-args.txt src/factories/DCAV3Factory.sol:DCAV3Factory
+forge verify-contract 0xc347BA6f6A9Ce0dd4F4A351EaB30c8Ebde59028e "src/RPS/RPSV1.sol:RPSV1" --verifier-url "https://api-optimistic.etherscan.io/api" --etherscan-api-key "F8EQY2UV2JB9VQ88VZ58NE3ZXWKAY2Q9MC" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6
+```
+
+## RPSV1Factory
+
+```
+forge verify-contract 0xF8ce142e20f3c4209E8d1E0FAc4A307db4dfC975 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url 'https://api-optimistic.etherscan.io/api' --etherscan-api-key BPHPNQ1IYRT2FFUPIWQXN2Z7YY1P3IGCXN --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1)" 0x1B8EE524844DE43827F13007C3360024D7d09191)
+```
+
+with admins
+
+```
+forge verify-contract 0x63ed218143F18f3a16c03008D4D062818298CA80 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url "https://api.polygonscan.com/api" --etherscan-api-key "EII3M4G2MKTHAS6METKBJH149P8EFWV9ZP" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1, address[] admins)" 0x0f15FBC7189468B5983A1Caa0e31d552128f6703 0x94Ad54EC1299B9BE82eCc9328187eF37fDB07329, 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43, 0xB0b12f40b18027f1a2074D2Ab11C6e0d6c6acbB5)
 ```
 
 # Developing contracts
