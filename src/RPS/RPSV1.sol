@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
@@ -9,7 +9,7 @@ import "../YokiHelper.sol";
 
 contract RPSV1 is IRPS, Initializable {
     bool public isTerminated = false;
-    address public constant TREASURY = 0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35;
+    address public constant TREASURY = 0xd9d0aa3FC1616Ee96Fe38F3EBaf9EAc3862a9d4e;
     uint256 public constant MIN_FREQUENCY = 60;
 
     string public merchantName;

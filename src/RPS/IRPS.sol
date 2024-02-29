@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
-
-import "@uniswap-periphery/contracts/interfaces/ISwapRouter.sol";
+pragma solidity ^0.8.20;
 
 interface IRPS {
     event Executed(
