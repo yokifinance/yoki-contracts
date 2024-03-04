@@ -8,9 +8,9 @@ import {DeployAssetsWhitelist} from "./01_DeployAssetsWhitelist.s.sol";
 import {DeployDCAV3} from "./02_DeployDCAV3.s.sol";
 import {DeployDCAV3Factory} from "./03_DeployDCAV3Factory.s.sol";
 
-import {AssetsWhitelist} from "../src/dependencies/AssetsWhitelist.sol";
-import {DCAV3} from "../src/strategies/DcaV3.sol";
-import {DCAV3Factory} from "../src/factories/DCAV3Factory.sol";
+import {AssetsWhitelist} from "@DCA/dependencies/AssetsWhitelist.sol";
+import {DCAV3} from "@DCA/strategies/DcaV3.sol";
+import {DCAV3Factory} from "@DCA/factories/DCAV3Factory.sol";
 
 contract DeployAll is Script {
     function run() external {

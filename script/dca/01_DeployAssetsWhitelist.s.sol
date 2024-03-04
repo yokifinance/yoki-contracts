@@ -3,7 +3,7 @@
 pragma solidity ^0.8.0;
 
 import {Script} from "forge-std/Script.sol";
-import {AssetsWhitelist} from "../src/dependencies/AssetsWhitelist.sol";
+import {AssetsWhitelist} from "@DCA/dependencies/AssetsWhitelist.sol";
 
 contract DeployAssetsWhitelist is Script {
     function run(address worker, address[] memory core_assets_to_spend, address[] memory core_assets_to_buy)

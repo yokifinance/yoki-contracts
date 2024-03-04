@@ -1,8 +1,8 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "./helpers/AssetsHelper.sol";
-import "../src/dependencies/AssetsWhitelist.sol";
+import "../helpers/AssetsHelper.sol";
+import "@DCA/dependencies/AssetsWhitelist.sol";
 
 contract AssetsWhitelistTest is Test {
     AssetsHelper public assetsHelper;
@@ -59,7 +59,7 @@ contract AssetsWhitelistTest is Test {
         address assetToSpend = assetsToSpend[0];
 
         assertFalse(assetsWhitelist.checkIfWhitelisted(newAssetToBuy, newAssetToBuy));
-    
+
         vm.prank(admin);
         assetsWhitelist.whitelistAssetToBuy(newAssetToBuy);
         assertTrue(assetsWhitelist.checkIfWhitelisted(assetToSpend, newAssetToBuy));
@@ -107,7 +107,10 @@ contract AssetsWhitelistTest is Test {
 
     function test_addNewAdmin() public {
         // Check if the admin has the DEFAULT_ADMIN_ROLE
-        assertTrue(assetsWhitelist.hasRole(assetsWhitelist.DEFAULT_ADMIN_ROLE(), admin), "Admin does not have the DEFAULT_ADMIN_ROLE");
+        assertTrue(
+            assetsWhitelist.hasRole(assetsWhitelist.DEFAULT_ADMIN_ROLE(), admin),
+            "Admin does not have the DEFAULT_ADMIN_ROLE"
+        );
 
         // Now, grant the ADMIN_ROLE to the worker
         vm.startPrank(admin);

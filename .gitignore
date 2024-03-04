@@ -1,6 +1,14 @@
 # Compiler files
 cache/
-out/
+
+# abi
+out/*
+!out/RPSV1.sol
+!out/RPSV1.sol/*
+!out/RPSV1Factory.sol
+!out/RPSV1Factory.sol/*
+!out/IRPS.sol
+!out/IRPS.sol/*
 
 # Ignores development broadcast logs
 !/broadcast

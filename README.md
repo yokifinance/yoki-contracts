@@ -22,26 +22,33 @@ Rename `.env.example` to `.env` and setup env variables
 Run
 
 Production:
-
-`polygon`
-
-```
-export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
-```
-
-`optimism`
+`RPS`
 
 ```
 export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Optimism.s.sol --broadcast --legacy --verify
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/rps/All_Deploy.s.sol --broadcast --legacy --verify
 ```
 
-`bsc`
+`DCA polygon`
+
 
 ```
 export $(grep -v '^#' .env | xargs)
-forge script --rpc-url $RPC --chain-id $CHAIN_ID script/networks/All_Deploy_Binance.s.sol --broadcast --legacy --verify
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
+```
+
+`DCA optimism`
+
+```
+export $(grep -v '^#' .env | xargs)
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Optimism.s.sol --broadcast --legacy --verify
+```
+
+`DCA bsc`
+
+```
+export $(grep -v '^#' .env | xargs)
+forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Binance.s.sol --broadcast --legacy --verify
 ```
 
 `note: deploy goes for single chain only. IF you need to deploy on multiple chains - dont forget to update "RPC" and "CHAIN_ID" values in env file before rerunning both commands`
@@ -60,8 +67,24 @@ Setup apikeys and urls in `foundry.toml` and constructor args in txt file (see e
 
 Verify target contract using following command:
 
+## RPSV1
+
+Example for manual verification on optimism
+
 ```
-forge verify-contract --chain polygon 0x7a5B8E6c19ceA36Abc3b8f2C13962344207feA6b --watch --constructor-args-path factory-constructor-args.txt src/factories/DCAV3Factory.sol:DCAV3Factory
+forge verify-contract 0xc347BA6f6A9Ce0dd4F4A351EaB30c8Ebde59028e "src/RPS/RPSV1.sol:RPSV1" --verifier-url "https://api-optimistic.etherscan.io/api" --etherscan-api-key "F8EQY2UV2JB9VQ88VZ58NE3ZXWKAY2Q9MC" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6
+```
+
+## RPSV1Factory
+
+```
+forge verify-contract 0xF8ce142e20f3c4209E8d1E0FAc4A307db4dfC975 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url 'https://api-optimistic.etherscan.io/api' --etherscan-api-key BPHPNQ1IYRT2FFUPIWQXN2Z7YY1P3IGCXN --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1)" 0x1B8EE524844DE43827F13007C3360024D7d09191)
+```
+
+with admins
+
+```
+forge verify-contract 0x63ed218143F18f3a16c03008D4D062818298CA80 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url "https://api.polygonscan.com/api" --etherscan-api-key "EII3M4G2MKTHAS6METKBJH149P8EFWV9ZP" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1, address[] admins)" 0x0f15FBC7189468B5983A1Caa0e31d552128f6703 0x94Ad54EC1299B9BE82eCc9328187eF37fDB07329, 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43, 0xB0b12f40b18027f1a2074D2Ab11C6e0d6c6acbB5)
 ```
 
 # Developing contracts
@@ -106,74 +129,4 @@ Use scripts from `/script` folder
 
 # Deployed contracts
 
-## Factory
-
-| chain    | env   | address                                    |
-| -------- | ----- | ------------------------------------------ |
-| Polygon  | dev   | 0xD966F00350352770F9A087A755F2Fb46a379B67f |
-| Polygon  | stage | 0xb98D003F017A452A33cDbAade4ED5Cb4B8EBA81c |
-| Polygon  | prod  | 0x93dC15813de39052CA6b0fde40c9D073339b29C7 |
-|          |
-| Optimism | dev   | 0xC952e7E894bC6D9E217F483611Dd58142419618E |
-| Optimism | stage | 0x41b42a0cc89b9AA554e8fEEA5EFf893dD6eCD294 |
-| Optimism | prod  | 0x8a03Bf5a5d2Aeed434Caaa30db467073A551354f |
-|          |
-| Binance  | dev   | 0x02c63197d2f93054398a706867aE0CAaf33002b2 |
-| Binance  | stage | 0x                                         |
-| Binance  | prod  | 0x                                         |
-|          |
-| opBNBtn  | dev   | 0xa65427d745Fa64d665C74688ed05793f07f1A037 |
-| opBNBtn  | stage | 0x                                         |
-| opBNBtn  | prod  | 0x                                         |
-
-## Whitelist
-
-| chain    | env   | address                                    |
-| -------- | ----- | ------------------------------------------ |
-| Polygon  | dev   | 0xa1c3DDCF368691ceFE6266051aF6601dF058c827 |
-| Polygon  | stage | 0x9338c26583509E0af29761101810fa5469910FE0 |
-| Polygon  | prod  | 0xfA248cCac23De39EC0c06AF4540Ee4b21f5814b1 |
-|          |
-| Optimism | dev   | 0xb1340E58954513b432875C0939D795bB01e3b907 |
-| Optimism | stage | 0xb1340E58954513b432875C0939D795bB01e3b907 |
-| Optimism | prod  | 0x661e63c5fAc61aB0A8a3489CC814C021C2C4fde2 |
-|          |
-| Binance  | dev   | 0x1B8EE524844DE43827F13007C3360024D7d09191 |
-| Binance  | stage | 0x                                         |
-| Binance  | prod  | 0x                                         |
-|          |
-| opBNBtn  | dev   | 0x085DdF516F7d04eb8a09a204Eb40966435d62F83 |
-| opBNBtn  | stage | 0x                                         |
-| opBNBtn  | prod  | 0x                                         |
-
-## Dca implementation
-
-| chain    | env   | address                                    |
-| -------- | ----- | ------------------------------------------ |
-| Polygon  | dev   | 0xE8B720e4C37eAc0b512DA062b8317d9dC3c3E3F0 |
-| Polygon  | stage | 0x1fE25798d205D77CC8c9F0c7D4667F69aa93DDbe |
-| Polygon  | prod  | 0x14dD93713869034aF6fbFa474aaC22c52c089B47 |
-|          |
-| Optimism | dev   | 0x86807bF5FaCEE7456882ffA1476b11657A135160 |
-| Optimism | stage | 0x86807bF5FaCEE7456882ffA1476b11657A135160 |
-| Optimism | prod  | 0x81859d17BB5B4D327951330237f7533011948059 |
-|          |
-| Binance  | dev   | 0xF8d3De6F50d9C3392e540A922FCD0cA3a69e9a80 |
-| Binance  | stage | 0x                                         |
-| Binance  | prod  | 0x                                         |
-|          |
-| opBNBtn  | dev   | 0xe3b23Ed609B84354B1d5031A7677be4Ae9517efA |
-| opBNBtn  | stage | 0x                                         |
-| opBNBtn  | prod  | 0x                                         |
-
-# Wallets
-
-TRASURY:
-`dev`: `0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35`
-`stage`: `0x400d0dbd2240c8cF16Ee74E628a6582a42bb4f35`
-`prod`: `0x31F5c1B1fF78AF6FB721cD1376f1B7D69929A794` - both treasury and executor
-
-EXECUTOR:
-`dev`: `0x79dAe73Ec88a11FA4B9381Fe92865a1EAE5f3125`
-`stage`: `0x79dAe73Ec88a11FA4B9381Fe92865a1EAE5f3125`
-`prod`: `0x31F5c1B1fF78AF6FB721cD1376f1B7D69929A794`
+[DCA contracts can be found here](./src/DCA/)
