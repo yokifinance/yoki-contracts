@@ -35,7 +35,7 @@ contract RPSV1 is IRPS, Initializable {
         require(YokiHelper.isERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
         require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
         require(frequency_ >= MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
-        require(processingFee_ >= 0 && processingFee_ <= 100, "RPS: Processing fee must be less than 100 (10%)");
+        require(processingFee_ <= 100, "RPS: Processing fee must be less than 100 (10%)");
 
         merchantName = merchantName_;
         settlementAddress = settlementAddress_;
