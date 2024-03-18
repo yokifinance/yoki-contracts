@@ -89,9 +89,6 @@ contract RPSV1 is IRPS, Initializable {
         uint256 feeAmount = (subscriptionCost * processingFee) / 1000;
         uint256 amountToTransfer = subscriptionCost - feeAmount;
 
-        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
-        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, settlementAddress, amountToTransfer);
-
         uint256 currentExecutionTimestamp = subscriberLastExecutionTimestamp + frequency;
         uint256 nextTimestamp = currentExecutionTimestamp + frequency;
         // if execute was not called in proper time-period (ex. previouse frequency was skipped) - reset timer
@@ -102,6 +99,9 @@ contract RPSV1 is IRPS, Initializable {
             // otherwise - treat current execution as it was executed exactly after frequency passed
             lastExecutionTimestamp[subscriber] = currentExecutionTimestamp;
         }
+
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, settlementAddress, amountToTransfer);
 
         return (nextTimestamp, feeAmount, amountToTransfer);
     }
