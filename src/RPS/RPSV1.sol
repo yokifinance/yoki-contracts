@@ -29,13 +29,13 @@ contract RPSV1 is IRPS, Initializable {
         uint256 subscriptionCost_,
         uint256 frequency_,
         uint8 processingFee_
-    ) public initializer {
+    ) external initializer {
         require(settlementAddress_ != address(0), "RPS: Invalid settlement address");
         require(tokenAddress_ != address(0), "RPS: Invalid token address");
         require(YokiHelper.isERC20(tokenAddress_), "RPS: Provided token address is not ERC20");
         require(subscriptionCost_ >= 1, "RPS: Subscription cost should be at least 1");
         require(frequency_ >= MIN_FREQUENCY, "RPS: Frequency should be at least 1 minute");
-        require(processingFee_ >= 0 && processingFee_ <= 100, "RPS: Processing fee must be less than 100 (10%)");
+        require(processingFee_ <= 100, "RPS: Processing fee must be less than 100 (10%)");
 
         merchantName = merchantName_;
         settlementAddress = settlementAddress_;
@@ -60,7 +60,7 @@ contract RPSV1 is IRPS, Initializable {
         return true;
     }
 
-    function subscribe() public {
+    function subscribe() external {
         address subscriber = msg.sender;
         require(!isTerminated, "RPS: Contract was terminated");
         require(!isSubscriber(subscriber), "RPS: Already subscribed");
@@ -89,9 +89,6 @@ contract RPSV1 is IRPS, Initializable {
         uint256 feeAmount = (subscriptionCost * processingFee) / 1000;
         uint256 amountToTransfer = subscriptionCost - feeAmount;
 
-        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
-        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, settlementAddress, amountToTransfer);
-
         uint256 currentExecutionTimestamp = subscriberLastExecutionTimestamp + frequency;
         uint256 nextTimestamp = currentExecutionTimestamp + frequency;
         // if execute was not called in proper time-period (ex. previouse frequency was skipped) - reset timer
@@ -103,10 +100,13 @@ contract RPSV1 is IRPS, Initializable {
             lastExecutionTimestamp[subscriber] = currentExecutionTimestamp;
         }
 
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, TREASURY, feeAmount);
+        YokiHelper.safeTransferFrom(address(tokenAddress), subscriber, settlementAddress, amountToTransfer);
+
         return (nextTimestamp, feeAmount, amountToTransfer);
     }
 
-    function execute(address subscriber) public returns (uint256 nextExectuionTimestamp) {
+    function execute(address subscriber) external returns (uint256 nextExectuionTimestamp) {
         require(canExecute(subscriber), "RPS: Can't execute");
 
         (uint256 nextExecutionTimestamp, uint256 fee, uint256 transfered) = processPayment(subscriber);
@@ -149,7 +149,7 @@ contract RPSV1 is IRPS, Initializable {
         emit Unsubscribed(address(this), subscriber);
     }
 
-    function terminate() public {
+    function terminate() external {
         require(msg.sender == settlementAddress, "RPS: Forbidden");
         isTerminated = true;
         emit Terminated(address(this));
