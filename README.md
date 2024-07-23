@@ -31,7 +31,6 @@ forge script --rpc-url $RPC --chain-id $CHAIN_ID script/rps/All_Deploy.s.sol --b
 
 `DCA polygon`
 
-
 ```
 export $(grep -v '^#' .env | xargs)
 forge script --rpc-url $RPC --chain-id $CHAIN_ID script/dca/networks/All_Deploy_Polygon.s.sol --broadcast --legacy --verify
@@ -84,7 +83,13 @@ forge verify-contract 0xF8ce142e20f3c4209E8d1E0FAc4A307db4dfC975 "src/RPS/RPSV1F
 with admins
 
 ```
-forge verify-contract 0x63ed218143F18f3a16c03008D4D062818298CA80 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url "https://api.polygonscan.com/api" --etherscan-api-key "EII3M4G2MKTHAS6METKBJH149P8EFWV9ZP" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1, address[] admins)" 0x0f15FBC7189468B5983A1Caa0e31d552128f6703 0x94Ad54EC1299B9BE82eCc9328187eF37fDB07329, 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43, 0xB0b12f40b18027f1a2074D2Ab11C6e0d6c6acbB5)
+forge verify-contract 0x03e9f9fF8960b607FF40bEd5b718CF6666a76DD3 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url "https://api.blastscan.io/api" --etherscan-api-key "16IH5QT8TNHBGGXY619PKUBWCIGWU9H48H" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1, address[] admins)" 0x0f15FBC7189468B5983A1Caa0e31d552128f6703 0x94Ad54EC1299B9BE82eCc9328187eF37fDB07329, 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43, 0xB0b12f40b18027f1a2074D2Ab11C6e0d6c6acbB5)
+```
+
+or
+
+```
+forge verify-contract 0x03e9f9fF8960b607FF40bEd5b718CF6666a76DD3 "src/RPS/RPSV1Factory.sol:RPSV1Factory" --verifier-url "https://api.blastscan.io/api" --etherscan-api-key "16IH5QT8TNHBGGXY619PKUBWCIGWU9H48H" --num-of-optimizations 200 --compiler-version v0.8.20+commit.a1b79de6 --constructor-args $(cast abi-encode "constructor(address param1, address[] admins)" 0xa65427d745Fa64d665C74688ed05793f07f1A037 "[0x94Ad54EC1299B9BE82eCc9328187eF37fDB07329, 0x2D9a8BE931f1EAb82ABFCb9697023424E440CD43, 0xB0b12f40b18027f1a2074D2Ab11C6e0d6c6acbB5]")
 ```
 
 # Developing contracts

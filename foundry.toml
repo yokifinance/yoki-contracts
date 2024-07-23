@@ -3,10 +3,13 @@ src = "src"
 out = "out"
 libs = ["lib"]
 [etherscan]
+mainnet = { key = "XNIWGVI9SWH35Y5Q6IT3H12H2F7ENPNVFP", url = "https://api.etherscan.io/api" }
 polygon = { key = "EII3M4G2MKTHAS6METKBJH149P8EFWV9ZP", url = "https://api.polygonscan.com/api" }
 bsc = { key = "B2JV9AVIVIWWDFDCB27KR1NJ35QEWS552H", url = "https://api.bscscan.com/api" }
 optimism = { key = "BPHPNQ1IYRT2FFUPIWQXN2Z7YY1P3IGCXN", url = "https://api-optimistic.etherscan.io/api" }
-blast = { key = "verifyContract", url = "https://api.routescan.io/v2/network/testnet/evm/168587773/etherscan" }
 arbitrum = { key = "X87MF2WYWNXBI2AE3ZZNADUXC5E15A7SW4", url = "https://api.arbiscan.io/api" }
+base = { key = "UH6R8M4UHHHXWUT2UFZRCI32292K7Q77WI", url = "https://api.basescan.org/api" }
+avalanche = { key = "", url = "https://api.avascan.info/v2/network/mainnet/evm/43114/etherscan" }
+blast = { key = "16IH5QT8TNHBGGXY619PKUBWCIGWU9H48H", url = "https://api.blastscan.io/api" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
